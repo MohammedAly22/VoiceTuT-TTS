@@ -311,7 +311,7 @@ with gr.Blocks(**_blocks_kwargs) as demo:
         '<div class="logo">𓋹</div>'
         '<div><h1>VoiceTut<span class="accent">-TTS</span></h1>'
         '<p>تحويل النص إلى كلام — مصري وإنجليزي · Egyptian Arabic & code-switching TTS</p></div>'
-        '<div class="badges"><span class="badge">14 صوت</span>'
+        '<div class="badges"><span class="badge">15 صوت</span>'
         '<span class="badge">Zero-shot</span><span class="badge">Streaming</span></div>'
         '</div>'
     )

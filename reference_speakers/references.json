@@ -96,5 +96,12 @@
         "audio_path": "reference_speakers/Aly_reference.wav",
         "reference_text": "أحب اعيد على كل المصريين اللي لسه فعلا بيشعرو بالفخر و معتزين بأرضهم و فاكرين الدم اللي اتدفع فيها",
         "gender": "male"
+    },
+    {
+        "speaker_id": "spk_15_female",
+        "speaker_name": "Omnia",
+        "audio_path": "reference_speakers/Omnia_clean.wav",
+        "reference_text": "لو خلصت الشغل بدري النهاردة ممكن نخرج نقعد في cafe و نتكلم شوية",
+        "gender": "female"
     }
 ]

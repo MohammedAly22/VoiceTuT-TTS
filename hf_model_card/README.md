@@ -35,7 +35,7 @@ base_model:
 
 </div>
 
-VoiceTut-TTS is an Egyptian-Arabic text-to-speech model fine-tuned from [OmniVoice](https://github.com/k2-fsa/OmniVoice) on ~380 hours of Egyptian podcast speech. It produces natural Egyptian speech with seamless **Arabic ↔ English code-switching**, ships **14 built-in studio voices**, supports **zero-shot voice cloning**, and includes a robust Egyptian-Arabic **text normalization** pipeline plus **true streaming** for long text.
+VoiceTut-TTS is an Egyptian-Arabic text-to-speech model fine-tuned from [OmniVoice](https://github.com/k2-fsa/OmniVoice) on ~380 hours of Egyptian podcast speech. It produces natural Egyptian speech with seamless **Arabic ↔ English code-switching**, ships **15 built-in studio voices**, supports **zero-shot voice cloning**, and includes a robust Egyptian-Arabic **text normalization** pipeline plus **true streaming** for long text.
 
 > **Why "VoiceTut"?** *Tut* — after the boy-king **Tutankhamun** (توت عنخ آمون) — anchors the model in Egyptian identity, just as our companion ASR model **[QwenCleo-ASR](https://github.com/MohammedAly22/qwencleo-asr)** is named after **Cleopatra**. Together they form an Egyptian speech stack: **Cleo listens, Tut speaks.** 🎙️🗣️
 
@@ -44,7 +44,7 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech model fine-tuned from [OmniVoi
 
 - 🎯 **Egyptian-first** — fine-tuned specifically on Egyptian Arabic, not generic MSA.
 - 🔀 **Code-switching** — handles real Arabic + English mixed speech (`عندي meeting بكرة`).
-- 🗣️ **14 built-in voices** — male & female studio speakers, each with style tags.
+- 🗣️ **15 built-in voices** — male & female studio speakers, each with style tags.
 - 🧬 **Zero-shot cloning** — clone any voice from a few seconds of reference audio.
 - 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + diacritics & name dictionaries.
 - ⚡ **True streaming** — long text is split into sentences and yielded as audio chunks.
@@ -90,7 +90,7 @@ tts.synthesize_long(long_paragraph, "long.wav", speaker="Sayed")
 
 | | Male | Female |
 |---|---|---|
-| Names | Abdelrahman, Abdullah, Kamal, Hossam, Mohamed, Omar, Sayed, Zaki, Aly | Asmaa, Esraa, Hanan, Sarah, Yasmin |
+| Names | Abdelrahman, Abdullah, Kamal, Hossam, Mohamed, Omar, Sayed, Zaki, Aly | Asmaa, Esraa, Hanan, Sarah, Yasmin, Omnia |
 
 Each voice ships with a reference clip + Arabic style tags (e.g. `شبابي`, `حيوي`, `هادي`). Browse and listen in the [Space](https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS).
 
