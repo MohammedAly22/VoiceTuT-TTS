@@ -30,7 +30,7 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech system fine-tuned from [OmniVo
 - 🧬 **Zero-shot cloning** — clone any voice from a few seconds of reference audio.
 - 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + a diacritics override table and a custom lexicon.
 - ⚡ **True streaming** — long text is split into sentences and yielded as audio chunks for low time-to-first-audio.
-- 📦 **pip-installable** — `pip install voicetut-tts`, or clone and run locally.
+- 📦 **pip-installable** — `pip install voicetut-tts` (+ OmniVoice from GitHub), or clone and run locally.
 
 ## 📊 Performance
 
@@ -63,7 +63,9 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech system fine-tuned from [OmniVo
 ```bash
 # 1. PyTorch matching your CUDA (see https://pytorch.org)
 pip install torch --index-url https://download.pytorch.org/whl/cu121
-# 2. VoiceTut-TTS (pulls in OmniVoice automatically)
+# 2. The OmniVoice backbone (not on PyPI, so install it from GitHub)
+pip install git+https://github.com/k2-fsa/OmniVoice.git
+# 3. VoiceTut-TTS
 pip install voicetut-tts
 # optional: web UI deps
 pip install "voicetut-tts[web]"
@@ -75,6 +77,7 @@ git clone https://github.com/MohammedAly22/VoiceTuT-TTS.git
 cd VoiceTuT-TTS
 conda create -n voicetut python=3.10 -y && conda activate voicetut
 pip install torch --index-url https://download.pytorch.org/whl/cu121
+pip install git+https://github.com/k2-fsa/OmniVoice.git    # backbone
 pip install -e ".[web,dev]"
 ```
 

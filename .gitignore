@@ -11,3 +11,4 @@ out/
 !docs/audio/*.wav
 .env
 .venv/
+reference_audio/

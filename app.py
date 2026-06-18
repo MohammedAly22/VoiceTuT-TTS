@@ -23,6 +23,25 @@ CKPT = os.environ.get("OMNICLEO_CKPT", DEFAULT_REPO)
 print(f"Loading VoiceTut-TTS from {CKPT} ...")
 TTS = VoiceTutTTS.from_pretrained(CKPT)
 SPEAKERS = TTS.list_speakers()
+
+# Copy each speaker's reference WAV into a local dir under the app's CWD.
+# When speakers come from an HF snapshot they live in ~/.cache/huggingface, which Gradio
+# refuses to serve. Mirroring them under ./reference_audio (always inside CWD) avoids the
+# allowed_paths / InvalidPathError problem on HF Spaces and locally alike.
+import shutil
+_REF_DIR = os.path.join(os.getcwd(), "reference_audio")
+os.makedirs(_REF_DIR, exist_ok=True)
+REF_AUDIO = {}   # speaker_name -> local servable wav path
+for s in SPEAKERS:
+    try:
+        dst = os.path.join(_REF_DIR, os.path.basename(s.audio_path))
+        if os.path.abspath(s.audio_path) != os.path.abspath(dst):
+            shutil.copyfile(s.audio_path, dst)
+        REF_AUDIO[s.speaker_name] = dst
+    except Exception as e:
+        print(f"  (warn) couldn't stage reference for {s.speaker_name}: {e}")
+        REF_AUDIO[s.speaker_name] = s.audio_path
+
 SPK_BY_NAME = {s.speaker_name: s for s in SPEAKERS}
 DEFAULT_SPK = SPEAKERS[0].speaker_name if SPEAKERS else None
 
@@ -241,7 +260,8 @@ def preview_reference(speaker_name):
     gender = "أنثى ♀" if spk.gender == "female" else "ذكر ♂"
     header = (f'<div class="vt-spk-meta"><span class="vt-gender">{gender}</span>'
               f'<div class="vt-chips">{chips}</div></div>')
-    return spk.audio_path, spk.reference_text, header
+    # use the locally-staged copy so Gradio can serve it (HF snapshot paths are blocked)
+    return REF_AUDIO.get(speaker_name, spk.audio_path), spk.reference_text, header
 
 
 # ---------------------------------------------------------------- reusable blocks
@@ -382,7 +402,14 @@ with gr.Blocks(**_blocks_kwargs) as demo:
 
 
 if __name__ == "__main__":
-    allowed = [TTS.registry.base_dir] if TTS.registry else []
+    # Allow serving the staged reference dir, the registry dir, and the HF cache
+    # (covers both local checkpoints and HF-snapshot speakers).
+    allowed = [_REF_DIR]
+    if TTS.registry:
+        allowed.append(TTS.registry.base_dir)
+    hf_cache = os.path.join(os.path.expanduser("~"), ".cache", "huggingface")
+    if os.path.isdir(hf_cache):
+        allowed.append(hf_cache)
     launch_kwargs = dict(
         server_name="0.0.0.0",
         server_port=int(os.environ.get("OMNICLEO_PORT", "7860")),

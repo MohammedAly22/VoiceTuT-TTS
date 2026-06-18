@@ -54,6 +54,8 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech model fine-tuned from [OmniVoi
 ```bash
 # PyTorch matching your CUDA (see https://pytorch.org)
 pip install torch --index-url https://download.pytorch.org/whl/cu121
+# OmniVoice backbone (not on PyPI — install from GitHub)
+pip install git+https://github.com/k2-fsa/OmniVoice.git
 pip install voicetut-tts
 ```
 

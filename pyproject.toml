@@ -19,14 +19,17 @@ classifiers = [
 ]
 
 dependencies = [
-    # The model backbone. Installs the OmniVoice package the checkpoint depends on.
-    "omnivoice @ git+https://github.com/k2-fsa/OmniVoice.git",
+    # NOTE: the model backbone `omnivoice` is NOT on PyPI and CANNOT be declared here
+    # (PyPI forbids `@ git+...` direct-URL deps). Install it separately:
+    #     pip install git+https://github.com/k2-fsa/OmniVoice.git
     "numpy",
     "soundfile",
     "huggingface_hub",
 ]
 
 [project.optional-dependencies]
+# `omnivoice` is intentionally absent (PyPI forbids git+ URLs in metadata). Install it with:
+#     pip install git+https://github.com/k2-fsa/OmniVoice.git
 web = ["gradio>=4.0"]
 dev = ["pytest"]
 
