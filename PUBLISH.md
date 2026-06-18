@@ -33,21 +33,24 @@ Run this **on the pod** (where `hf` is logged in as you):
 
 ```bash
 # create the model repo (once)
-hf repo create MohammedAly22/VoiceTut-TTS --repo-type model -y
+hf repo create MohammedAly22/VoiceTut-TTS --type model --exist-ok
 
 # upload the checkpoint weights + config + tokenizer
 hf upload MohammedAly22/VoiceTut-TTS \
     /home/workspace/m.aly/OmniVoice-FT/OmniVoice/exp/omnivoice_egy/checkpoint-20000 . \
-    --repo-type model
+    --type model
 
 # upload the built-in speakers (so from_pretrained can fetch them)
 hf upload MohammedAly22/VoiceTut-TTS \
-    reference_speakers reference_speakers --repo-type model
+    reference_speakers reference_speakers --type model
 #   ^ run from the VoiceTut-TTS repo dir, or give the absolute path to reference_speakers/
 
 # upload the model card (this overwrites the auto README)
-hf upload MohammedAly22/VoiceTut-TTS hf_model_card/README.md README.md --repo-type model
+hf upload MohammedAly22/VoiceTut-TTS hf_model_card/README.md README.md --type model
 ```
+
+> CLI note: this `hf` version uses `--type` (not `--repo-type`), `--exist-ok` (not `-y`),
+> and `--space-sdk` (not `--space_sdk`).
 
 > The model card is at `hf_model_card/README.md`. Its banner points to the raw GitHub
 > image, so push to GitHub (step 1) first or the banner 404s until then.
@@ -64,13 +67,14 @@ python -c "from voicetut_tts import VoiceTutTTS; VoiceTutTTS.from_pretrained('Mo
 A Space needs a **GPU** to run this TTS model (set hardware to a GPU tier in Space settings).
 
 ```bash
-# create the Space (gradio sdk)
-hf repo create MohammedAly22/VoiceTut-TTS --repo-type space --space_sdk gradio -y
+# create the Space (gradio sdk). Optionally add hardware, e.g. --flavor t4-small
+hf repo create MohammedAly22/VoiceTut-TTS --type space --space-sdk gradio --exist-ok
 
-# upload the Space files
-hf upload MohammedAly22/VoiceTut-TTS hf_space/README.md README.md --repo-type space
-hf upload MohammedAly22/VoiceTut-TTS hf_space/requirements.txt requirements.txt --repo-type space
-hf upload MohammedAly22/VoiceTut-TTS app.py app.py --repo-type space
+# upload the Space files. If the plain repo id is rejected for a space,
+# prefix it with `spaces/` (i.e. spaces/MohammedAly22/VoiceTut-TTS).
+hf upload MohammedAly22/VoiceTut-TTS hf_space/README.md README.md --type space
+hf upload MohammedAly22/VoiceTut-TTS hf_space/requirements.txt requirements.txt --type space
+hf upload MohammedAly22/VoiceTut-TTS app.py app.py --type space
 ```
 
 Then in the Space UI → **Settings → Hardware → pick a GPU** (e.g. T4/L4). The Space's
