@@ -87,11 +87,13 @@ Then in the Space UI → **Settings → Hardware → pick a GPU** (e.g. T4/L4). 
 The distributions are already built in `dist/` (validated with `twine check`).
 
 ```bash
-# (recommended) test on TestPyPI first
-python -m twine upload --repo testpypi dist/*
-# real upload (needs your PyPI token; user = __token__)
+# (recommended) test on TestPyPI first  (use full --repository, not --repo which is ambiguous)
+python -m twine upload --repository testpypi dist/*
+# real upload
 python -m twine upload dist/*
 ```
+> username = `__token__`, password = your API token (`pypi-...`).
+> TestPyPI and PyPI have separate accounts/tokens.
 
 If you change anything, rebuild first:
 ```bash
