@@ -103,5 +103,19 @@
         "audio_path": "reference_speakers/Omnia_clean.wav",
         "reference_text": "لو خلصت الشغل بدري النهاردة ممكن نخرج نقعد في cafe و نتكلم شوية",
         "gender": "female"
+    },
+    {
+        "speaker_id": "spk_16_male",
+        "speaker_name": "Essam",
+        "audio_path": "reference_speakers/Essam_clean.mp3",
+        "reference_text": "الموضوع فعلا مهم جدا احنا نحتاجين ناخد بالنا الفترة الجاية عشان الموضوع مفيهوش هزار يا جماعة",
+        "gender": "male"
+    },
+    {
+        "speaker_id": "spk_17_male",
+        "speaker_name": "Ahmed",
+        "audio_path": "reference_speakers/Ahmed_clean.mp3",
+        "reference_text": "الموضوع فعلا مهم جدا احنا نحتاجين ناخد بالنا الفترة الجاية عشان الموضوع مفيهوش هزار يا جماعة",
+        "gender": "male"
     }
 ]
