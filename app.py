@@ -73,10 +73,10 @@ SPEAKER_CHOICES = [
 
 EXAMPLES = [
     ["Mohamed", "بصراحة ال feedback اللي جالي من ال manager كان كويس اوي، بس في شوية comments محتاجين نخلصها."],
-    ["Sayed", "و القصة دي اتكتبت في كتاب اسمه رحلات ماركو بولو 'The Travels of Marco Polo' ، و الكتاب ده بيوري الناس ان العالم أكبر بكتير من اللي هما فاكرينه."],
+    ["Abdullah", "و الموضوع محتاج دراسة و تفكير و تخطيط عشان الحاجة تتعمل صح، ف بالتالي كل ما كان عندك ايمان في نفسك و ثقة في ربنا سبحانه و تعالى هتلاقي ان كل حاجة بتمشي احسن مما انت مْخطط و مُتَخيّل كمان يا ابراهيم."],
     ["Asmaa", "اتفقنا نعمل ال meeting بكرة الصبح، فياريت كل واحد يجهز ال presentation بتاعته."],
     ["Yasmin", "النهارده الجو حلو اوي، يلا نطلع نتمشى وناخد بريك من ال laptop."],
-    ["Abdelrahman", "يا صباح الفل يا سيدي، اخبارك ايه؟ تعالى نشرب قهوة ونتكلم في الشغل."],
+    ["Sayed", "ان انت تبقا مش stressed، و مركز في حياتك و في بيتك و عايش عيشة كويسة ده اهم حاجة، يعني هو الواحد هيعوز ايه اكتر من كدة و مع حلة ورق عنب ع الغدا خلاص انا كدة مَلِك زماني."],
 ]
 
 # blue waveform for all audio players (Gradio renders orange by default)
@@ -316,10 +316,10 @@ def preview_reference(speaker_name):
 def advanced_block():
     with gr.Accordion("⚙️ إعدادات متقدمة", open=False):
         with gr.Row():
-            ns = gr.Slider(8, 64, value=32, step=1, label="خطوات التوليد / Steps")
-            gs = gr.Slider(1.0, 5.0, value=2.0, step=0.1, label="قوة التوجيه / Guidance")
+            ns = gr.Slider(8, 64, value=64, step=1, label="خطوات التوليد / Steps")
+            gs = gr.Slider(1.0, 5.0, value=2.5, step=0.1, label="قوة التوجيه / Guidance")
         with gr.Row():
-            sp = gr.Slider(0.5, 2.0, value=1.0, step=0.05, label="السرعة / Speed")
+            sp = gr.Slider(0.5, 2.0, value=0.95, step=0.05, label="السرعة / Speed")
             nm = gr.Checkbox(value=True, label="تطبيع النص / Normalize")
     return ns, gs, sp, nm
 
