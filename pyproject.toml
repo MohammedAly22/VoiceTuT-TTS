@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "voicetut-tts"
-version = "0.1.1"
+version = "0.2.0"
 description = "VoiceTut-TTS — Egyptian Arabic & code-switching text-to-speech (fine-tuned OmniVoice)."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 # `omnivoice` is intentionally absent (PyPI forbids git+ URLs in metadata). Install it with:
 #     pip install git+https://github.com/k2-fsa/OmniVoice.git
-web = ["gradio>=4.0"]
+web = ["gradio>=5.16.1,<6", "uvicorn"]
 dev = ["pytest"]
 
 [project.urls]
@@ -45,5 +45,5 @@ voicetut = "voicetut_tts.cli:main"
 include = ["voicetut_tts*"]
 
 [tool.setuptools.package-data]
-voicetut_tts = ["data/*.csv"]
-# (data/diacritics.csv, data/names_en_ar.csv)
+voicetut_tts = ["data/*.csv", "webui/*", "webui/assets/*"]
+# data/names_en_ar.csv + the prebuilt web UI (built from web/ by `npm run build`)

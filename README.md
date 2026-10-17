@@ -18,17 +18,29 @@
 
 > 🎧 **Listen:** hear VoiceTut-TTS vs. the base OmniVoice on Egyptian Arabic & code-switching → **[Audio demos](https://mohammedaly22.github.io/VoiceTuT-TTS/)** · 🚀 **Try it live:** **[HuggingFace Space](https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS)**
 
-VoiceTut-TTS is an Egyptian-Arabic text-to-speech system fine-tuned from [OmniVoice](https://github.com/k2-fsa/OmniVoice) on ~380 hours of Egyptian podcast speech. It produces natural Egyptian speech with seamless **Arabic ↔ English code-switching**, ships **17 built-in studio voices**, supports **zero-shot voice cloning**, and includes a robust Egyptian-Arabic **text normalization** pipeline plus **true streaming** for long text.
+VoiceTut-TTS is an Egyptian-Arabic text-to-speech system fine-tuned from [OmniVoice](https://github.com/k2-fsa/OmniVoice). It produces natural Egyptian speech with seamless **Arabic ↔ English code-switching**, ships **19 built-in voices**, supports **zero-shot voice cloning**, and includes a robust Egyptian-Arabic **text normalization** pipeline plus **true streaming** for long text.
 
 > **Why "VoiceTut"?** *Tut* — after the boy-king **Tutankhamun** (توت عنخ آمون) — anchors the model in Egyptian identity, just as our companion ASR model **[QwenCleo-ASR](https://github.com/MohammedAly22/qwencleo-asr)** is named after **Cleopatra**. Together they form an Egyptian speech stack: **Cleo listens, Tut speaks.** 🎙️🗣️
+
+## 🆕 What's new in v2
+
+**VoiceTut-TTS-v2** is a more capable model that **supports Arabic diacritics (التشكيل)**. Text without diacritics works exactly as before, and when a word is pronounced wrong you can now fix it by adding diacritics to that word:
+
+```python
+tts.synthesize("انا مخطط للموضوع ده", speaker="Mohammed")    # may read مُخَطَّط (a chart)
+tts.synthesize("انا مْخَطَّط للموضوع ده", speaker="Mohammed")  # reads مْخَطَّط (planning)
+```
+
+You don't need to diacritize the whole sentence — the right mark on the right letter is enough.
 
 ## ✨ Features
 
 - 🎯 **Egyptian-first** — fine-tuned specifically on Egyptian Arabic, not generic MSA.
 - 🔀 **Code-switching** — handles real Arabic + English mixed speech (`عندي meeting بكرة`).
-- 🗣️ **17 built-in voices** — male & female studio speakers, each with style tags.
+- 🗣️ **19 built-in voices** — male & female speakers.
 - 🧬 **Zero-shot cloning** — clone any voice from a few seconds of reference audio.
-- 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + a diacritics override table and a custom lexicon.
+- ✍️ **Diacritics support (v2)** — add التشكيل to any word to control exactly how it is pronounced.
+- 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + an English→Arabic name map. Your diacritics are always kept.
 - ⚡ **True streaming** — long text is split into sentences and yielded as audio chunks for low time-to-first-audio.
 - 📦 **pip-installable** — `pip install voicetut-tts` (+ OmniVoice from GitHub), or clone and run locally.
 
@@ -88,7 +100,7 @@ from voicetut_tts import VoiceTutTTS
 tts = VoiceTutTTS.from_pretrained("mohammedaly22/VoiceTut-TTS")
 
 # 1) Built-in speaker
-tts.synthesize("ازيك عامل ايه النهاردة؟", speaker="Mohamed", output="out.wav")
+tts.synthesize("ازيك عامل ايه النهاردة؟", speaker="Mohammed", output="out.wav")
 
 # 2) Zero-shot voice cloning
 tts.synthesize("النهارده الجو حلو اوي",
@@ -97,22 +109,25 @@ tts.synthesize("النهارده الجو حلو اوي",
 
 # 3) Generation parameters
 tts.synthesize("عندي meeting الساعة 3:30",
-               speaker="Asmaa", num_step=48, guidance_scale=2.5, speed=1.1,
+               speaker="Yasmin", num_step=48, guidance_scale=2.5, speed=1.1,
                output="cs.wav")
+
+# 4) Fix a word's pronunciation with diacritics
+tts.synthesize("دي عِشْرة عمر يا صاحبي", speaker="Ahmed", output="fixed.wav")
 ```
 
 ### True streaming (long text)
 
 ```python
 import sounddevice as sd
-for sr, chunk in tts.stream(long_paragraph, speaker="Sayed"):
+for sr, chunk in tts.stream(long_paragraph, speaker="Ahmed"):
     sd.play(chunk, sr); sd.wait()          # play each sentence as it's ready
 
 # or write a single concatenated file
-tts.synthesize_long(long_paragraph, "long.wav", speaker="Sayed")
+tts.synthesize_long(long_paragraph, "long.wav", speaker="Ahmed")
 ```
 
-### Text normalization & custom lexicon
+### Text normalization
 
 ```python
 from voicetut_tts import ArabicNormalizer
@@ -133,46 +148,45 @@ norm("عندي 250 جنيه والميعاد 3:30 يوم 14/3/2024")
 | `14/3/2024` | أربعتاشر مارس ألفين وأربعة وعشرين |
 | `a.b@gmail.com` | a dot b at gmail dot com |
 
-**Override tables & runtime dictionaries**
+Diacritics you write are passed to the model untouched, so normalization never undoes a pronunciation fix.
+
+**English names**
 
 ```python
-# diacritized-form overrides (win over the CSV table)
-tts.add_lexicon({"تيوت": "تُوت", "نايل": "نَايِل"})
-
 # English-name -> Arabic for correct pronunciation
 tts.add_names({"Ziad": "زياد", "Kareem": "كريم"})
 ```
 
-Editable data tables ship with the package:
-- [`data/diacritics.csv`](voicetut_tts/data/diacritics.csv) — `word,diacritized` (Arabic word → diacritized form)
-- [`data/names_en_ar.csv`](voicetut_tts/data/names_en_ar.csv) — `english,arabic` (name transliteration)
+The name table ships with the package: [`data/names_en_ar.csv`](voicetut_tts/data/names_en_ar.csv) — `english,arabic`.
 
 ### CLI
 
 ```bash
 voicetut --list-speakers
-voicetut --text "ازيك عامل ايه؟" --speaker Mohamed --output out.wav
-voicetut --text "نص طويل..." --speaker Sayed --stream --output long.wav
+voicetut --text "ازيك عامل ايه؟" --speaker Mohammed --output out.wav
+voicetut --text "نص طويل..." --speaker Ahmed --stream --output long.wav
 ```
 
 ## 🌐 Serving
 
-A custom-styled **Gradio** web UI (black/white + blue theme, speaker dropdown with gender + style tags, reference preview, voice cloning with mic recording, AR/EN language switch, generation params, examples):
+A modern Arabic-first (RTL) **web app** built with React: light/dark mode, an animated live waveform, a diacritics toolbar to fix pronunciation in place, a searchable voice gallery with previews, voice cloning by upload or microphone, one-shot or streaming generation, and live latency metrics. It is the same UI that runs on the [HuggingFace Space](https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS).
 
 ```bash
 pip install "voicetut-tts[web]"
-python app.py                                   # default HF checkpoint, port 7860
-OMNICLEO_CKPT=exp/omnivoice_egy/checkpoint-8000 python app.py   # local checkpoint
-OMNICLEO_SHARE=1 python app.py                  # public share link
+python app.py                                   # default HF checkpoint -> http://localhost:7860
+VOICETUT_CKPT=path/to/checkpoint python app.py  # local checkpoint
+VOICETUT_MOCK=1 python app.py                   # preview the UI without a model / GPU
 ```
+
+Behind the UI, the server exposes a small Gradio API at `/gradio` (`info`, `normalize`, `synthesize`, `stream`) that you can call with `gradio_client`. UI sources live in [`web/`](web/README.md).
 
 ## 📓 Examples (Colab)
 
 | Notebook | Description | |
 |---|---|---|
 | [01_quickstart.ipynb](examples/01_quickstart.ipynb) | Install, load, synthesize with a built-in voice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/01_quickstart.ipynb) |
-| [02_voice_cloning.ipynb](examples/02_voice_cloning.ipynb) | Zero-shot cloning + normalization & lexicon | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/02_voice_cloning.ipynb) |
-| [03_web_ui.ipynb](examples/03_web_ui.ipynb) | Launch the Gradio web UI from Colab (public link) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/03_web_ui.ipynb) |
+| [02_voice_cloning.ipynb](examples/02_voice_cloning.ipynb) | Zero-shot cloning, normalization & diacritics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/02_voice_cloning.ipynb) |
+| [03_web_ui.ipynb](examples/03_web_ui.ipynb) | Launch the web UI from Colab | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/03_web_ui.ipynb) |
 | [04_evaluation.ipynb](examples/04_evaluation.ipynb) | Measure RTF, TTFA, VRAM, WER, similarity, UTMOS | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MohammedAly22/VoiceTuT-TTS/blob/main/examples/04_evaluation.ipynb) |
 
 ## 🔗 Links

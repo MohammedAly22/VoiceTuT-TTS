@@ -10,10 +10,12 @@ from .engine import (
     resolve_language,
     DEFAULT_REPO,
 )
-from .normalization import ArabicNormalizer, NormalizerConfig, number_to_arabic_words
+from .normalization import (
+    ArabicNormalizer, NormalizerConfig, number_to_arabic_words, strip_diacritics,
+)
 from .speakers import Speaker, SpeakerRegistry
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "VoiceTutTTS",
@@ -21,6 +23,7 @@ __all__ = [
     "ArabicNormalizer",
     "NormalizerConfig",
     "number_to_arabic_words",
+    "strip_diacritics",
     "Speaker",
     "SpeakerRegistry",
     "split_sentences",

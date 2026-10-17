@@ -3,6 +3,5 @@ spaces                 # required for ZeroGPU (@spaces.GPU); harmless on dedicat
 torch
 # OmniVoice backbone (must be installed explicitly — voicetut-tts no longer auto-pulls it)
 omnivoice @ git+https://github.com/k2-fsa/OmniVoice.git
-# this package (from GitHub so the Space always has the latest app + speakers)
-voicetut-tts @ git+https://github.com/MohammedAly22/VoiceTuT-TTS.git
-gradio>=4.0
+# this package (from GitHub so the Space always has the latest app, web UI + speakers)
+voicetut-tts[web] @ git+https://github.com/MohammedAly22/VoiceTuT-TTS.git

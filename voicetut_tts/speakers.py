@@ -13,25 +13,16 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-# Arabic style tags per speaker (used by the web UI chips). Purely cosmetic.
-STYLE_TAGS: Dict[str, List[str]] = {
-    "Abdelrahman": ["محترف", "حماسي"],
-    "Aly":         ["هادي", "فخور"],
-    "Abdullah":    ["رسمي", "محترف"],
-    "Kamal":       ["جاد", "واضح"],
-    "Hossam":      ["دافي", "ودود"],
-    "Mohamed":     ["هادي", "عميق"],
-    "Omar":        ["حكواتي", "بطئ"],
-    "Sayed":       ["شبابي", "معبّر"],
-    "Zaki":        ["رزين", "موثوق"],
-    "Asmaa":       ["ناعم", "ودود"],
-    "Esraa":       ["مرح", "حيوي"],
-    "Hanan":       ["دافي", "هادي"],
-    "Sarah":       ["أنيق", "أمومي"],
-    "Yasmin":      ["شبابي", "مشرق"],
-    "Omnia":       ["ودود", "عفوي"],
-    "Essam":       ["جاد", "واضح"],
-    "Ahmed":       ["شبابي", "حيوي"],
+# Optional Arabic style tags per speaker (shown in the web UI). Purely cosmetic,
+# e.g. {"Ahmed": ["شبابي", "حيوي"]}. Speakers without tags just show their gender.
+STYLE_TAGS: Dict[str, List[str]] = {}
+
+# Arabic display names per speaker (web UI). Purely cosmetic.
+ARABIC_NAMES: Dict[str, str] = {
+    "Ahmed": "أحمد", "Ali": "علي", "Hassan": "حسن", "Karim": "كريم", "Mahmoud": "محمود",
+    "Mohammed": "محمد", "Mostafa": "مصطفى", "Ramy": "رامي", "Shaker": "شاكر", "Tareq": "طارق",
+    "Yehia": "يحيى", "Youssef": "يوسف", "Hadeer": "هدير", "Hanan": "حنان", "Mariam": "مريم",
+    "Rana": "رنا", "Sarah": "سارة", "Yasmin": "ياسمين", "Yara": "يارا",
 }
 
 
@@ -49,6 +40,7 @@ class Speaker:
         return {
             "speaker_id": self.speaker_id,
             "speaker_name": self.speaker_name,
+            "arabic_name": ARABIC_NAMES.get(self.speaker_name, self.speaker_name),
             "gender": self.gender,
             "tags": self.tags,
             "reference_text": self.reference_text,

@@ -5,9 +5,9 @@ Turns "messy" real-world text into a clean, speakable Egyptian-Arabic string:
   * expands numbers, currencies, dates, times, percentages, phone numbers
   * reads out emails, URLs, @handles
   * expands common Egyptian/Arabic abbreviations
-  * normalizes Arabic orthography (tatweel, redundant diacritics, digits)
+  * normalizes Arabic orthography (tatweel, digits) while keeping user diacritics
   * keeps Latin (English) words intact for code-switching
-  * applies a diacritics override table (CSV) and an optional custom lexicon
+  * maps common English names to Arabic script for correct pronunciation
 
 Design goals: deterministic, dependency-free, and each piece independently testable.
 
@@ -19,12 +19,25 @@ from __future__ import annotations
 import csv
 import os
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_DIACRITICS_CSV = os.path.join(_HERE, "data", "diacritics.csv")
 DEFAULT_NAMES_CSV = os.path.join(_HERE, "data", "names_en_ar.csv")
+
+# --------------------------------------------------------------------------- diacritics
+# Tanween, harakat, shadda, sukun (U+064B..U+0652) + superscript alef (U+0670).
+# Diacritics written by the user are passed to the model untouched: they are how a
+# mispronounced word gets fixed in place (e.g. "مْخطط" vs "مُخطط").
+DIACRITICS = "ً-ْٰ"
+_DIACRITICS_RE = re.compile(f"[{DIACRITICS}]")
+_DOUBLED_MARK_RE = re.compile(f"([{DIACRITICS}])\\1+")
+
+
+def strip_diacritics(text: str) -> str:
+    """Remove Arabic diacritics (harakat, tanween, shadda, sukun)."""
+    return _DIACRITICS_RE.sub("", text)
+
 
 # --------------------------------------------------------------------------- digits
 ARABIC_INDIC = "٠١٢٣٤٥٦٧٨٩"
@@ -241,9 +254,8 @@ NUMBER_RE = re.compile(r"(?<![\w@])(\d+(?:\.\d+)?)(?![\w@])")
 
 @dataclass
 class NormalizerConfig:
-    diacritics_csv: Optional[str] = DEFAULT_DIACRITICS_CSV
     names_csv: Optional[str] = DEFAULT_NAMES_CSV
-    apply_diacritics: bool = True
+    keep_diacritics: bool = True       # pass user diacritics through (False strips them)
     transliterate_names: bool = True   # map English names -> Arabic for correct pronunciation
     expand_numbers: bool = True
     expand_dates_times: bool = True
@@ -251,7 +263,6 @@ class NormalizerConfig:
     expand_contacts: bool = True       # email / url / @handle / phone
     expand_abbreviations: bool = True
     keep_latin: bool = True            # leave other English words for code-switching
-    custom_lexicon: Dict[str, str] = field(default_factory=dict)
 
 
 class ArabicNormalizer:
@@ -261,33 +272,21 @@ class ArabicNormalizer:
         norm = ArabicNormalizer()
         norm("عندي meeting الساعة 3:30 ومعايا 250 جنيه")
 
-    Add overrides at runtime:
-        norm.add_lexicon({"تيوت": "تُوت"})
+    Diacritics typed by the user are kept, so a mispronounced word can be fixed in place:
+        norm("الموديل ده مْخطط له كويس")
+
+    Add English-name overrides at runtime:
+        norm.add_names({"Ziad": "زياد"})
     """
 
     def __init__(self, config: Optional[NormalizerConfig] = None, **kwargs):
         self.cfg = config or NormalizerConfig(**kwargs)
-        self._diacritics: Dict[str, str] = {}
-        if self.cfg.apply_diacritics and self.cfg.diacritics_csv:
-            self._load_diacritics(self.cfg.diacritics_csv)
         # English -> Arabic name map (keys lowercased for case-insensitive match)
         self._names: Dict[str, str] = {}
         if self.cfg.transliterate_names and self.cfg.names_csv:
             self._load_names(self.cfg.names_csv)
-        # custom lexicon overrides the CSV
-        self._lexicon: Dict[str, str] = dict(self.cfg.custom_lexicon)
 
-    # ---------------------------------------------------------------- lexicon
-    def _load_diacritics(self, path: str) -> None:
-        if not os.path.exists(path):
-            return
-        with open(path, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                w = (row.get("word") or "").strip()
-                d = (row.get("diacritized") or "").strip()
-                if w and d:
-                    self._diacritics[w] = d
-
+    # ---------------------------------------------------------------- names
     def _load_names(self, path: str) -> None:
         if not os.path.exists(path):
             return
@@ -297,10 +296,6 @@ class ArabicNormalizer:
                 ar = (row.get("arabic") or "").strip()
                 if en and ar:
                     self._names[en.lower()] = ar
-
-    def add_lexicon(self, mapping: Dict[str, str]) -> None:
-        """Add/override word -> diacritized-form entries (takes priority over the CSV)."""
-        self._lexicon.update({k.strip(): v.strip() for k, v in mapping.items()})
 
     def add_names(self, mapping: Dict[str, str]) -> None:
         """Add/override English-name -> Arabic-form entries (e.g. {'Ziad': 'زياد'})."""
@@ -313,11 +308,13 @@ class ArabicNormalizer:
         return re.sub(r"[A-Za-z]+", repl, text)
 
     # ---------------------------------------------------------------- atomic steps
-    @staticmethod
-    def normalize_orthography(text: str) -> str:
+    def normalize_orthography(self, text: str) -> str:
         text = text.translate(_AR2ASCII)                  # arabic-indic -> ascii digits
         text = re.sub("[ـ]", "", text)               # remove tatweel ـ
-        text = re.sub("[ً-ْ]", "", text)        # strip incoming harakat (we re-add)
+        if self.cfg.keep_diacritics:
+            text = _DOUBLED_MARK_RE.sub(r"\1", text)      # "مَََ" -> "مَ"
+        else:
+            text = strip_diacritics(text)
         text = re.sub(r"\s+", " ", text)
         return text.strip()
 
@@ -364,21 +361,13 @@ class ArabicNormalizer:
         # Only replace abbreviations as whole tokens, never as a substring inside an
         # Arabic word (e.g. "م" must NOT fire inside "محمد"). We require the match to be
         # surrounded by non-letter chars (start/end, space, digit, punctuation).
-        AR = "ء-ي"
+        # Diacritics count as part of a word, so "مَ" never fires the "م" abbreviation.
+        AR = "ء-ي" + DIACRITICS
         for abbr, full in sorted(ABBREVIATIONS.items(), key=lambda x: -len(x[0])):
             e = re.escape(abbr)
             pat = rf"(?<![A-Za-z{AR}]){e}(?![A-Za-z{AR}])"
             text = re.sub(pat, " " + full + " ", text)
         return text
-
-    def apply_diacritics(self, text: str) -> str:
-        def repl(m):
-            w = m.group(0)
-            if w in self._lexicon:        # custom lexicon wins
-                return self._lexicon[w]
-            return self._diacritics.get(w, w)
-        # match runs of Arabic letters only (leave latin/code-switch untouched)
-        return re.sub(r"[ء-ي]+", repl, text)
 
     # ---------------------------------------------------------------- helpers
     def _say_email(self, s: str) -> str:
@@ -415,8 +404,6 @@ class ArabicNormalizer:
                 text = text.replace(sym, word)
         if self.cfg.transliterate_names:           # English names -> Arabic (e.g. Ahmed -> أحمد)
             text = self.transliterate_names(text)
-        if self.cfg.apply_diacritics:
-            text = self.apply_diacritics(text)
         return re.sub(r"\s+", " ", text).strip()
 
     __call__ = normalize
@@ -458,11 +445,10 @@ if __name__ == "__main__":
     print("  IN : Ahmed and Mohamed and Mona")
     print("  OUT:", norm("Ahmed and Mohamed and Mona"))
 
-    # custom lexicon override demo
-    print("\n# custom lexicon override")
-    norm.add_lexicon({"تيوت": "تُوت", "فويس": "فُويس"})
-    print("IN :", "فويس تيوت احسن موديل")
-    print("OUT:", norm("فويس تيوت احسن موديل"))
+    # user diacritics pass straight through -> fix a word's pronunciation in place
+    print("\n# diacritics pass-through")
+    print("IN :", "انا مْخطط للموضوع ده من بدري")
+    print("OUT:", norm("انا مْخطط للموضوع ده من بدري"))
 
     # number sanity checks
     print("\n# number_to_arabic_words sanity")

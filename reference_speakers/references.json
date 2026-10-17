@@ -1,121 +1,135 @@
 [
     {
         "speaker_id": "spk_01_male",
-        "speaker_name": "Abdelrahman",
-        "audio_path": "reference_speakers/Abdelrahman_clean.wav",
-        "reference_text": "أنا حاجز appointment عند الدكتور بعد الضهر، فممكن أكون مش متاح لمدة ساعة أو ساعتين، ولو في حاجة مستعجلة ابعتها قبل ما أخرج.",
+        "speaker_name": "Ahmed",
+        "audio_path": "reference_speakers/ahmed.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
         "gender": "male"
     },
     {
         "speaker_id": "spk_02_male",
-        "speaker_name": "Abdullah",
-        "audio_path": "reference_speakers/Abdullah_clean.wav",
-        "reference_text": "ال meeting اتأجل لبكرة الصبح، فبقى عندي وقت أخلص باقي التاسكات اللي متراكمة عليا.",
+        "speaker_name": "Ali",
+        "audio_path": "reference_speakers/ali.wav",
+        "reference_text": "ااه، كل ما تيجي تفكر ان الدنيا وحشة و ان حياتك مليانة مشاكل، اِفتكر انك ف نعم كبيرة انت مش عارف عددها.",
         "gender": "male"
     },
     {
         "speaker_id": "spk_03_male",
-        "speaker_name": "Kamal",
-        "audio_path": "reference_speakers/Kamal_clean.wav",
-        "reference_text": "العربية محتاجة بنزين من امبارح، فهعدي على أقرب محطة وأنا راجع من الشغل عشان ماتعطلش بكرة الصبح وأنا مستعجل.",
+        "speaker_name": "Hassan",
+        "audio_path": "reference_speakers/hassan.wav",
+        "reference_text": "بص، يعني انا شايف انك متستعجلش في القرار، خد وقتك و فكر فيه بهدوء الأول.",
         "gender": "male"
     },
     {
         "speaker_id": "spk_04_male",
-        "speaker_name": "Hossam",
-        "audio_path": "reference_speakers/Hossam_clean.wav",
-        "reference_text": "النهارده كان يوم طويل جدًا ومليان اجتماعات ومكالمات، وكل اللي محتاجه دلوقتي إني أرجع البيت وأرتاح شوية وأبعد عن أي شغل لحد بكرة.",
+        "speaker_name": "Karim",
+        "audio_path": "reference_speakers/karim.wav",
+        "reference_text": "بص، يعني انا شايف انك متستعجلش في القرار، خد وقتك و فكر فيه بهدوء الأول.",
         "gender": "male"
     },
     {
         "speaker_id": "spk_05_male",
-        "speaker_name": "Mohamed",
-        "audio_path": "reference_speakers/Mohamed_clean.wav",
-        "reference_text": "أنا كنت رايح البيت بعد ما خلصت شغل، بس اكتشفت ان كان عندي meeting مهم بخصوص ال budget بس نسيته خالص",
+        "speaker_name": "Mahmoud",
+        "audio_path": "reference_speakers/mahmoud.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
         "gender": "male"
     },
     {
         "speaker_id": "spk_06_male",
-        "speaker_name": "Omar",
-        "audio_path": "reference_speakers/Omar_clean.wav",
-        "reference_text": "كنت هطلب أكل من المطعم زي كل مرة، بس غيرت رأيي في آخر لحظة وقررت أعمل حاجة سريعة في البيت أوْفَر وأخفّ شوية.",
+        "speaker_name": "Mohammed",
+        "audio_path": "reference_speakers/mohammed.wav",
+        "reference_text": "أنا كنت رايح البيت بعد ما خلصت شغل، بس اكتشفت ان كان عندي meeting مهم بخصوص ال budget بس نسيته خالص",
         "gender": "male"
     },
     {
         "speaker_id": "spk_07_male",
-        "speaker_name": "Sayed",
-        "audio_path": "reference_speakers/Sayed_clean.wav",
+        "speaker_name": "Mostafa",
+        "audio_path": "reference_speakers/mostafa.wav",
         "reference_text": "ممكن تبعتلي ال location على WhatsApp عشان أوصل للمكان من غير ما ألفّ كتير؟",
         "gender": "male"
     },
     {
         "speaker_id": "spk_08_male",
-        "speaker_name": "Zaki",
-        "audio_path": "reference_speakers/Zaki_clean.wav",
-        "reference_text": "امبارح الطريق كان زحمة جدًا، فاضطرّيت أغيّر المسار وأوصل متأخر عن معادي بحوالي نص ساعة.",
+        "speaker_name": "Ramy",
+        "audio_path": "reference_speakers/ramy.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
         "gender": "male"
     },
     {
-        "speaker_id": "spk_09_female",
-        "speaker_name": "Asmaa",
-        "audio_path": "reference_speakers/Asmaa_clean.wav",
-        "reference_text": "ال meeting اتأجل لبكرة الصبح بدل النهاردة، فبقى عندي وقت إضافي أخلص باقي التاسكات اللي متراكمة عليا من أول الأسبوع.",
-        "gender": "female"
+        "speaker_id": "spk_09_male",
+        "speaker_name": "Shaker",
+        "audio_path": "reference_speakers/shaker.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
+        "gender": "male"
     },
     {
-        "speaker_id": "spk_10_female",
-        "speaker_name": "Esraa",
-        "audio_path": "reference_speakers/Esraa_clean.wav",
-        "reference_text": "ممكن تبعتلي ال location على WhatsApp أو SMS عشان أوصل للمكان بسهولة، لأني مش حافظ المنطقة كويس ومش عايز أضيع وقت في السؤال.",
-        "gender": "female"
+        "speaker_id": "spk_10_male",
+        "speaker_name": "Tareq",
+        "audio_path": "reference_speakers/tarek.wav",
+        "reference_text": "الموضوع فعلا مهم جدا احنا نحتاجين ناخد بالنا الفترة الجاية عشان الموضوع مفيهوش هزار يا جماعة",
+        "gender": "male"
     },
     {
-        "speaker_id": "spk_11_female",
-        "speaker_name": "Hanan",
-        "audio_path": "reference_speakers/Hanan_clean.wav",
-        "reference_text": "أنا نازل دلوقتي أجيب شوية حاجات من ال supermarket، ولو محتاج أي حاجة ضروري ابعتلي قبل ما أوصل هناك، عشان غالبًا مش هبقى فاضية أنزل تاني بعد ما أرجع البيت.",
-        "gender": "female"
+        "speaker_id": "spk_11_male",
+        "speaker_name": "Yehia",
+        "audio_path": "reference_speakers/yehia.wav",
+        "reference_text": "لما حد يقول: اي حاجة، بييبقا عايز حاجة معينة، بس مش عايز يقول.",
+        "gender": "male"
     },
     {
-        "speaker_id": "spk_12_female",
-        "speaker_name": "Sarah",
-        "audio_path": "reference_speakers/Sarah_clean.wav",
-        "reference_text": "ال internet كان بيفصَل طول اليوم بشكل متكرر، وده عطّل جزء كبير من الشغل اللي كنت مخطط أخلصه، واضطريت أعيد بعض الحاجات أكتر من مرة.",
-        "gender": "female"
-    },
-    {
-        "speaker_id": "spk_13_female",
-        "speaker_name": "Yasmin",
-        "audio_path": "reference_speakers/Yasmin_clean.wav",
-        "reference_text": "ابعتلي ال file النهائي بعد ما تراجع كل التعديلات وتتأكد إن مفيش أي ملاحظات ناقصة، عشان أرفعه للعميل قبل نهاية اليوم.",
-        "gender": "female"
-    },
-    {
-        "speaker_id": "spk_14_male",
-        "speaker_name": "Aly",
-        "audio_path": "reference_speakers/Aly_reference.wav",
+        "speaker_id": "spk_12_male",
+        "speaker_name": "Youssef",
+        "audio_path": "reference_speakers/youssef.wav",
         "reference_text": "أحب اعيد على كل المصريين اللي لسه فعلا بيشعرو بالفخر و معتزين بأرضهم و فاكرين الدم اللي اتدفع فيها",
         "gender": "male"
     },
     {
-        "speaker_id": "spk_15_female",
-        "speaker_name": "Omnia",
-        "audio_path": "reference_speakers/Omnia_clean.wav",
-        "reference_text": "لو خلصت الشغل بدري النهاردة ممكن نخرج نقعد في cafe و نتكلم شوية",
+        "speaker_id": "spk_13_female",
+        "speaker_name": "Hadeer",
+        "audio_path": "reference_speakers/hadeer.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
         "gender": "female"
     },
     {
-        "speaker_id": "spk_16_male",
-        "speaker_name": "Essam",
-        "audio_path": "reference_speakers/Essam_clean.mp3",
-        "reference_text": "الموضوع فعلا مهم جدا احنا نحتاجين ناخد بالنا الفترة الجاية عشان الموضوع مفيهوش هزار يا جماعة",
-        "gender": "male"
+        "speaker_id": "spk_14_female",
+        "speaker_name": "Hanan",
+        "audio_path": "reference_speakers/hanan.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
+        "gender": "female"
     },
     {
-        "speaker_id": "spk_17_male",
-        "speaker_name": "Ahmed",
-        "audio_path": "reference_speakers/Ahmed_clean.mp3",
-        "reference_text": "الموضوع فعلا مهم جدا احنا نحتاجين ناخد بالنا الفترة الجاية عشان الموضوع مفيهوش هزار يا جماعة",
-        "gender": "male"
+        "speaker_id": "spk_15_female",
+        "speaker_name": "Mariam",
+        "audio_path": "reference_speakers/mariam.wav",
+        "reference_text": "ال meeting بكرة الصبح بدري، ف ياريت تلبس الحتة اللي ع الحبل الله يباركلك عشان ناخد ال deal ده.",
+        "gender": "female"
+    },
+    {
+        "speaker_id": "spk_16_female",
+        "speaker_name": "Rana",
+        "audio_path": "reference_speakers/rana.wav",
+        "reference_text": "ااه، كل ما تيجي تفكر ان الدنيا وحشة و ان حياتك مليانة مشاكل، اِفتكر انك ف نعم كبيرة انت مش عارف عددها.",
+        "gender": "female"
+    },
+    {
+        "speaker_id": "spk_17_female",
+        "speaker_name": "Sarah",
+        "audio_path": "reference_speakers/sarah.wav",
+        "reference_text": "بص، يعني انا شايف انك متستعجلش في القرار، خد وقتك و فكر فيه بهدوء الأول.",
+        "gender": "female"
+    },
+    {
+        "speaker_id": "spk_18_female",
+        "speaker_name": "Yasmin",
+        "audio_path": "reference_speakers/yasmin.wav",
+        "reference_text": "ابعتلي ال file النهائي بعد ما تراجع كل التعديلات وتتأكد إن مفيش أي ملاحظات ناقصة، عشان أرفعه للعميل قبل نهاية اليوم.",
+        "gender": "female"
+    },
+    {
+        "speaker_id": "spk_19_female",
+        "speaker_name": "Yara",
+        "audio_path": "reference_speakers/yara.wav",
+        "reference_text": "يعني كل ما تيجي تفكر ان الدنيا بايظة و ان الحياة مش قد كدة، اِفتكر ان ربنا موجود و انه قادر على كل شئ.",
+        "gender": "female"
     }
 ]

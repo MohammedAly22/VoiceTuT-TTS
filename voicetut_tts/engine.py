@@ -6,7 +6,8 @@ A thin, well-documented layer over the fine-tuned Egyptian-Arabic OmniVoice
 checkpoint, adding:
   * built-in speakers + custom zero-shot voice cloning
   * Egyptian-Arabic + English only (language is fixed/validated)
-  * Arabic text normalization (numbers, dates, currency, ... + diacritics + lexicon)
+  * Arabic text normalization (numbers, dates, currency, ...) that keeps user diacritics,
+    so any mispronounced word can be fixed by adding harakat to it
   * TRUE streaming for long text: splits into sentences and yields audio chunks
     as soon as each is generated (low time-to-first-audio).
 
@@ -17,13 +18,16 @@ Quick start
     tts = VoiceTutTTS.from_pretrained("mohammedaly22/VoiceTut-TTS")
 
     # built-in speaker
-    tts.synthesize("ازيك عامل ايه؟", speaker="Mohamed", output="out.wav")
+    tts.synthesize("ازيك عامل ايه؟", speaker="Mohammed", output="out.wav")
 
     # custom zero-shot clone
     tts.synthesize("النهارده الجو حلو", ref_audio="me.wav", ref_text="...", output="o.wav")
 
+    # fix a word's pronunciation by diacritizing it
+    tts.synthesize("انا مْخطط للموضوع ده", speaker="Mohammed", output="fixed.wav")
+
     # streaming (yields (sample_rate, np.ndarray) chunks)
-    for sr, chunk in tts.stream("نص طويل... جملة تانية... جملة تالتة", speaker="Sayed"):
+    for sr, chunk in tts.stream("نص طويل... جملة تانية... جملة تالتة", speaker="Ahmed"):
         play(chunk)            # play / send over the wire as it arrives
 """
 
@@ -210,13 +214,9 @@ class VoiceTutTTS:
         bundled = os.path.normpath(bundled)
         return bundled if os.path.exists(bundled) else None
 
-    # ------------------------------------------------------------------ speakers / lexicon
+    # ------------------------------------------------------------------ speakers / names
     def list_speakers(self) -> List[Speaker]:
         return self.registry.all() if self.registry else []
-
-    def add_lexicon(self, mapping: Dict[str, str]) -> None:
-        """Add custom word -> diacritized-form overrides applied during normalization."""
-        self.normalizer.add_lexicon(mapping)
 
     def add_names(self, mapping: Dict[str, str]) -> None:
         """Add English-name -> Arabic-form overrides (e.g. {'Ziad': 'زياد'})."""

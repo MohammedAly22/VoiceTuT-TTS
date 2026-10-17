@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Command-line interface for VoiceTut-TTS.
 
-    voicetut --text "ازيك عامل ايه؟" --speaker Mohamed --output out.wav
+    voicetut --text "ازيك عامل ايه؟" --speaker Mohammed --output out.wav
     voicetut --text "..." --ref_audio me.wav --ref_text "..." --output o.wav
     voicetut --list-speakers
 """

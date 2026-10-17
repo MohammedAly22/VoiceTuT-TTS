@@ -15,7 +15,8 @@ models:
 
 # 🎙️ VoiceTut-TTS — Egyptian Arabic TTS
 
-Interactive demo of [VoiceTut-TTS](https://huggingface.co/mohammedaly22/VoiceTut-TTS) — Egyptian Arabic & code-switching text-to-speech, fine-tuned from OmniVoice.
+Interactive demo of [VoiceTut-TTS v2](https://huggingface.co/mohammedaly22/VoiceTut-TTS) — Egyptian Arabic & code-switching text-to-speech, fine-tuned from OmniVoice.
 
-- 17 built-in voices · zero-shot cloning · streaming · text normalization
+- **v2:** follows Arabic diacritics — fix any mispronounced word by diacritizing it
+- 19 built-in voices · zero-shot cloning · streaming · text normalization
 - Code & notebooks: https://github.com/MohammedAly22/VoiceTuT-TTS

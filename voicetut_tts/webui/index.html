@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VoiceTut TTS</title>
+    <meta name="description" content="VoiceTut-TTS — تحويل النص لصوت بالعامية المصرية، مع دعم التشكيل لتصحيح النطق، واستنساخ الصوت، والبث المباشر." />
+    <meta name="theme-color" content="#0a0b10" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231f5eff'/%3E%3Cpath d='M19 20l13 26 13-26' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <script>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("voicetut-theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark")
+          t = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-CSMa1hs6.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CWzy1qWe.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

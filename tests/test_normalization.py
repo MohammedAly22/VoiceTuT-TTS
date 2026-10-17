@@ -1,7 +1,7 @@
 """Unit tests for text normalization and engine text-logic (no model/GPU needed).
 
 Comparisons are diacritic-insensitive (via `_norm`) so they survive vowel-mark tweaks
-to the lexicons; we assert on the consonantal skeleton + word structure.
+to the built-in number/time word tables; we assert on the consonantal skeleton + word structure.
 """
 
 import re
@@ -111,10 +111,25 @@ def test_keeps_english(norm):
     assert "meeting" in norm("عندي meeting بكرة")
 
 
-def test_custom_lexicon():
-    n = ArabicNormalizer()
-    n.add_lexicon({"تيوت": "تُوت"})
-    assert "تُوت" in n("فويس تيوت")
+def test_user_diacritics_preserved(norm):
+    # diacritics are how users fix a mispronounced word -> they must reach the model
+    assert "مْخطط" in norm("انا مْخطط للموضوع")
+    assert "مُتَخيّل" in norm("مُتَخيّل كمان")
+
+
+def test_doubled_diacritics_collapsed(norm):
+    assert norm("مَََرحبا") == "مَرحبا"
+
+
+def test_diacritized_letter_is_not_abbreviation(norm):
+    # a lone diacritized "مَ" / "صُ" is part of a word, not the م/ص abbreviation
+    assert "مساء" not in norm("مَ")
+    assert "صباح" not in norm("صُ")
+
+
+def test_strip_diacritics_option():
+    n = ArabicNormalizer(keep_diacritics=False)
+    assert n("مْخطط") == "مخطط"
 
 
 # --------------------------------------------------------------- engine text logic

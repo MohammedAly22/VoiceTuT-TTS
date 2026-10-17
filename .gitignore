@@ -12,6 +12,8 @@ out/
 .env
 .venv/
 reference_audio/
+web/node_modules/
+web/dist/
 
 # kept local, not in the public repo
 PUBLISH.md
