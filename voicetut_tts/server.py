@@ -177,7 +177,21 @@ def _reset_vram():
         pass
 
 
-@gpu(duration=120)
+def _gpu_seconds(text: str, language: str, voice: dict, params: GenerationParams, normalize: bool,
+                 floor: int = 15, cap: int = 120) -> int:
+    """GPU time to reserve on ZeroGPU, sized to the request (quota is charged per reservation).
+    ~0.065 s of speech per character, generated at about real time for 32 steps, plus overhead;
+    cloning without a transcript also runs ASR on the reference."""
+    work = 0.09 * len(text) * max(params.num_step, 8) / 32
+    extra = 25 if voice.get("ref_audio") and not voice.get("ref_text") else 0
+    return int(min(cap, max(floor, 10 + work + extra)))
+
+
+def _gpu_seconds_stream(*args) -> int:
+    return _gpu_seconds(*args, floor=20, cap=180)
+
+
+@gpu(duration=_gpu_seconds)
 def _gpu_synthesize(text: str, language: str, voice: dict, params: GenerationParams,
                     normalize: bool):
     _reset_vram()
@@ -187,7 +201,7 @@ def _gpu_synthesize(text: str, language: str, voice: dict, params: GenerationPar
     return np.asarray(wav, dtype=np.float32), time.perf_counter() - t0, _peak_vram_gb()
 
 
-@gpu(duration=180)
+@gpu(duration=_gpu_seconds_stream)
 def _gpu_stream(text: str, language: str, voice: dict, params: GenerationParams,
                 normalize: bool):
     _reset_vram()

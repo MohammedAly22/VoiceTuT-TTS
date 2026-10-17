@@ -52,6 +52,22 @@ interface FileOut {
   path: string;
 }
 
+// ZeroGPU: let the huggingface.co page attach the visitor's login to GPU requests, so logged-in
+// (e.g. PRO) users spend their own quota instead of the small anonymous one. Same handshake as
+// Gradio's own frontend: announce support to the parent page, which answers with the same
+// message; @gradio/client then fetches the auth headers from the parent for every queued call.
+const ZEROGPU_HANDSHAKE = "supports-zerogpu-headers";
+if (typeof window !== "undefined" && window.parent !== window) {
+  window.addEventListener("message", (e) => {
+    if (e.data === ZEROGPU_HANDSHAKE) (window as unknown as { supports_zerogpu_headers: boolean }).supports_zerogpu_headers = true;
+  });
+  const host = window.location.hostname;
+  if (host.endsWith(".hf.space") || host.includes(".dev.")) {
+    const origin = host.includes(".dev.") ? `https://moon-${host.split(".")[1]}.dev.spaces.huggingface.tech` : "https://huggingface.co";
+    window.parent.postMessage(ZEROGPU_HANDSHAKE, origin);
+  }
+}
+
 // Everything is resolved relative to the page, so the app works at "/" and under sub-paths.
 const pageBase = new URL(".", window.location.href);
 // the Gradio app is served on the same origin/path as the page
@@ -74,6 +90,9 @@ function errorText(e: unknown): string {
   if (!e) return "حصل خطأ غير متوقع";
   if (typeof e === "string") return e;
   const m = (e as { message?: unknown }).message;
+  if (typeof m === "string" && /ZeroGPU quota/i.test(m)) {
+    return "خلصت حصة الـ GPU المجانية. سجّل دخولك على HuggingFace وافتح الـ Space من صفحته على huggingface.co عشان تستخدم حصتك.";
+  }
   if (typeof m === "string" && m) return m;
   return "حصل خطأ غير متوقع";
 }
