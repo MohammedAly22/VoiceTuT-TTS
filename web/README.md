@@ -1,7 +1,7 @@
 # VoiceTut-TTS — web UI
 
 React + Vite + framer-motion front end for VoiceTut-TTS. It talks to the Python server
-(`voicetut_tts/server.py`) through its Gradio API (`/gradio`), so it works the same locally
+(`voicetut_tts/server.py`) through its Gradio API (served on the same origin), so it works the same locally
 and on a HuggingFace ZeroGPU Space.
 
 ```

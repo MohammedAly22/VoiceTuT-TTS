@@ -10,14 +10,14 @@ export default defineConfig({
   base: "./",
   build: {
     outDir: "../voicetut_tts/webui",
+    assetsDir: "ui", // Gradio owns /assets on the same server
     emptyOutDir: true,
     chunkSizeWarningLimit: 900,
   },
   server: {
     port: 5173,
-    proxy: {
-      "/gradio": { target: API, changeOrigin: false, ws: true },
-      "/voices": { target: API, changeOrigin: false },
-    },
+    proxy: Object.fromEntries(
+      ["/config", "/gradio_api", "/voices", "/healthz"].map((p) => [p, { target: API, changeOrigin: false }]),
+    ),
   },
 });

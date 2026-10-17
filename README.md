@@ -178,7 +178,7 @@ VOICETUT_CKPT=path/to/checkpoint python app.py  # local checkpoint
 VOICETUT_MOCK=1 python app.py                   # preview the UI without a model / GPU
 ```
 
-Behind the UI, the server exposes a small Gradio API at `/gradio` (`info`, `normalize`, `synthesize`, `stream`) that you can call with `gradio_client`. UI sources live in [`web/`](web/README.md).
+Behind the UI, the server exposes a small Gradio API (`info`, `normalize`, `synthesize`, `stream`) that you can call with `gradio_client` on the same URL. UI sources live in [`web/`](web/README.md).
 
 ## 📓 Examples (Colab)
 

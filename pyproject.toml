@@ -45,5 +45,5 @@ voicetut = "voicetut_tts.cli:main"
 include = ["voicetut_tts*"]
 
 [tool.setuptools.package-data]
-voicetut_tts = ["data/*.csv", "webui/*", "webui/assets/*"]
+voicetut_tts = ["data/*.csv", "webui/*", "webui/ui/*"]
 # data/names_en_ar.csv + the prebuilt web UI (built from web/ by `npm run build`)

@@ -3,10 +3,10 @@
 VoiceTut-TTS web server — a React web UI on top of a small Gradio API.
 
     /            the web UI (static build in ``voicetut_tts/webui``, sources in ``web/``)
-    /gradio      Gradio API used by the UI (queueing + HuggingFace ZeroGPU support)
     /voices/<id> reference clip of a built-in speaker
+    everything else: the Gradio app (queueing + HuggingFace ZeroGPU support)
 
-Endpoints (``/gradio``, callable with ``@gradio/client`` or ``gradio_client``):
+Gradio endpoints (callable with ``@gradio/client`` or ``gradio_client`` on the site URL):
 
     info        -> {version, device, speakers, examples, ...}
     normalize   (text) -> the text exactly as the model will read it
@@ -225,6 +225,11 @@ def _voice(voice_mode, speaker, ref_audio, ref_text) -> dict:
         return {"ref_audio": ref_audio, "ref_text": (ref_text or "").strip() or None}
     if not speaker:
         raise _gr().Error("اختار صوت")
+    reg = getattr(_STATE["tts"], "registry", None)
+    try:
+        reg.get(speaker)
+    except (KeyError, AttributeError):
+        raise _gr().Error(f"الصوت '{speaker}' مش موجود")
     return {"speaker": speaker}
 
 
@@ -352,53 +357,61 @@ def load_tts(model: Optional[str] = None, mock: Optional[bool] = None):
     return tts
 
 
-def create_app(model: Optional[str] = None, mock: Optional[bool] = None):
-    """FastAPI app: React UI at ``/``, Gradio API at ``/gradio``, speaker clips at ``/voices``."""
-    import gradio as gr
-    from fastapi import FastAPI, HTTPException
-    from fastapi.responses import FileResponse, HTMLResponse
-    from fastapi.staticfiles import StaticFiles
+def install_ui_routes(app) -> None:
+    """Put the web UI routes in front of Gradio's own routes on its server app."""
+    from starlette.responses import FileResponse, HTMLResponse, JSONResponse, Response
+    from starlette.routing import Mount, Route
+    from starlette.staticfiles import StaticFiles
 
-    if _STATE["tts"] is None:
-        load_tts(model, mock)
+    index_html = os.path.join(WEBUI_DIR, "index.html")
 
-    app = FastAPI(title="VoiceTut-TTS", docs_url=None, redoc_url=None)
+    def index(request):
+        if not os.path.isfile(index_html):
+            return HTMLResponse("<h3>VoiceTut-TTS</h3><p>Web UI not built. Run <code>cd web && "
+                                "npm install && npm run build</code>.</p>")
+        return FileResponse(index_html, headers={"Cache-Control": "no-cache"})
 
-    @app.get("/voices/{speaker_id}", include_in_schema=False)
-    def voice_clip(speaker_id: str):
+    def voice_clip(request):
         reg = getattr(_STATE["tts"], "registry", None)
         try:
-            spk = reg.get(speaker_id) if reg else None
+            spk = reg.get(request.path_params["speaker_id"]) if reg else None
         except KeyError:
             spk = None
         if spk is None or not os.path.exists(spk.audio_path):
-            raise HTTPException(404, "unknown speaker")
+            return Response("unknown speaker", status_code=404)
         return FileResponse(spk.audio_path, headers={"Cache-Control": "public, max-age=86400"})
 
-    @app.get("/healthz", include_in_schema=False)
-    def healthz():
-        return {"ok": True, "device": _STATE["device"]}
+    def healthz(request):
+        return JSONResponse({"ok": True, "device": _STATE["device"]})
 
-    app = gr.mount_gradio_app(app, build_api(), path="/gradio", allowed_paths=[_OUT_DIR])
-
-    if os.path.isfile(os.path.join(WEBUI_DIR, "index.html")):
-        app.mount("/", StaticFiles(directory=WEBUI_DIR, html=True), name="webui")
-    else:
-        @app.get("/", include_in_schema=False)
-        def no_ui():
-            return HTMLResponse(
-                "<h3>VoiceTut-TTS</h3><p>Web UI not built. Run <code>cd web && npm install "
-                "&& npm run build</code>. The API is live at <a href='gradio/'>/gradio</a>.</p>")
-    return app
+    routes = [Route("/", index), Route("/voices/{speaker_id}", voice_clip), Route("/healthz", healthz)]
+    ui_assets = os.path.join(WEBUI_DIR, "ui")
+    if os.path.isdir(ui_assets):
+        routes.append(Mount("/ui", StaticFiles(directory=ui_assets), name="voicetut-ui"))
+    app.router.routes[0:0] = routes            # first match wins -> these override Gradio's "/"
 
 
 def launch(host: str = "0.0.0.0", port: Optional[int] = None, model: Optional[str] = None,
-           mock: Optional[bool] = None):
-    import uvicorn
-    port = port or int(os.environ.get("VOICETUT_PORT") or os.environ.get("OMNICLEO_PORT") or 7860)
-    app = create_app(model, mock)
-    print(f"VoiceTut-TTS UI  ->  http://localhost:{port}")
-    uvicorn.run(app, host=host, port=port, log_level="warning")
+           mock: Optional[bool] = None, block: bool = True):
+    """Serve the UI + API with ``demo.launch()``.
+
+    Launching through Gradio (rather than mounting it in another server) is required on
+    ZeroGPU Spaces: the `spaces` package runs its GPU startup hook inside ``Blocks.launch``.
+    """
+    if _STATE["tts"] is None:
+        load_tts(model, mock)
+    demo = build_api()
+    kwargs = dict(prevent_thread_lock=True, allowed_paths=[_OUT_DIR], ssr_mode=False,
+                  share=False, inbrowser=False, quiet=True, show_error=True)
+    if not os.environ.get("SPACE_ID"):           # on Spaces, host/port come from the environment
+        kwargs.update(server_name=host,
+                      server_port=port or int(os.environ.get("VOICETUT_PORT") or os.environ.get("OMNICLEO_PORT") or 7860))
+    app, local_url, _ = demo.launch(**kwargs)
+    install_ui_routes(app)
+    print(f"VoiceTut-TTS UI  ->  {local_url}")
+    if block:
+        demo.block_thread()
+    return demo
 
 
 if __name__ == "__main__":

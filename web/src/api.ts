@@ -54,7 +54,8 @@ interface FileOut {
 
 // Everything is resolved relative to the page, so the app works at "/" and under sub-paths.
 const pageBase = new URL(".", window.location.href);
-const API_ROOT = new URL("gradio/", pageBase).href.replace(/\/$/, "");
+// the Gradio app is served on the same origin/path as the page
+const API_ROOT = pageBase.href.replace(/\/$/, "");
 export const assetUrl = (p: string) => new URL(p, pageBase).href;
 
 let clientPromise: Promise<Client> | null = null;
