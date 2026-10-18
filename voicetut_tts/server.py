@@ -330,17 +330,22 @@ def api_stream(text, language, voice_mode, speaker, ref_audio, ref_text,
     voice = _voice(voice_mode, speaker, ref_audio, ref_text)
     sr = _STATE["tts"].sampling_rate
     t0 = time.perf_counter()
-    ttfa, audio, n = None, 0.0, 0
+    ttfa, audio, files = None, 0.0, []
     for chunk, vram in _gpu_stream(text, _language(language), voice,
                                    _params(num_step, guidance, speed), bool(normalize)):
-        n += 1
         now = time.perf_counter() - t0
         ttfa = now if ttfa is None else ttfa
         audio += len(chunk) / sr
-        yield _write_wav(chunk, sr), {
+        path = _write_wav(chunk, sr)
+        files.append(path)
+        # `files` lists every chunk so far: Gradio streams generator outputs as diffs that the
+        # JS client applies to one shared object, so a slow consumer can see a later message's
+        # file in place of an earlier one. The cumulative list lets the UI never miss a chunk.
+        yield path, {
             "total": round(now, 3), "audio": round(audio, 3),
             "rtf": round(now / audio, 3) if audio else None,
-            "ttfa": round(ttfa, 3), "chunks": n, "vram_gb": vram,
+            "ttfa": round(ttfa, 3), "chunks": len(files), "vram_gb": vram,
+            "files": list(files),
         }
 
 

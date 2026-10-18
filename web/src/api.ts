@@ -30,6 +30,7 @@ export interface Metrics {
   ttfa: number | null;
   chunks: number;
   vram_gb?: number | null;
+  files?: string[]; // stream only: server paths of every chunk generated so far
 }
 
 export type Language = "arz" | "en";
@@ -75,6 +76,9 @@ const pageBase = new URL(".", window.location.href);
 const API_ROOT = pageBase.href.replace(/\/$/, "");
 export const assetUrl = (p: string) => new URL(p, pageBase).href;
 
+/** URL of a file the server wrote (its output dir is in Gradio's allowed paths). */
+const fileUrl = (path: string) => `${API_ROOT}/gradio_api/file=${encodeURI(path)}`;
+
 let clientPromise: Promise<Client> | null = null;
 
 function client(): Promise<Client> {
@@ -117,7 +121,7 @@ function payload(r: SynthRequest): unknown[] {
 }
 
 async function fetchFile(f: FileOut): Promise<ArrayBuffer> {
-  const res = await fetch(f.url ?? f.path);
+  const res = await fetch(f.url ?? fileUrl(f.path));
   if (!res.ok) throw new ApiError(`تعذّر تحميل الصوت (${res.status})`);
   return res.arrayBuffer();
 }
@@ -154,7 +158,11 @@ export async function synthesize(req: SynthRequest): Promise<{ audio: ArrayBuffe
   return { audio, metrics: out[1] as Metrics };
 }
 
-/** Yields one decoded-ready chunk per sentence as the server finishes it. */
+/** Yields every audio chunk, in order, as the server finishes it.
+ *
+ * @gradio/client applies streamed diffs to ONE shared object, so by the time a queued
+ * message is read it may already show a later chunk. Each message therefore carries the
+ * cumulative `metrics.files` list, and we play whatever we haven't played yet, in order. */
 export async function* streamSynth(
   req: SynthRequest,
   signal: AbortSignal,
@@ -172,7 +180,7 @@ export async function* streamSynth(
     };
   });
   signal.addEventListener("abort", onAbort, { once: true });
-  const seen = new Set<string>();
+  let played = 0;
   try {
     while (!signal.aborted) {
       const step = await Promise.race([it.next(), aborted]);
@@ -180,10 +188,11 @@ export async function* streamSynth(
       const msg = step.value;
       if (msg.type === "data") {
         const [file, metrics] = msg.data as [FileOut | null, Metrics];
-        // the final "completed" message repeats the last yield -> de-duplicate by path
-        if (!file || seen.has(file.path)) continue;
-        seen.add(file.path);
-        yield { audio: await fetchFile(file), metrics };
+        const paths = metrics?.files ?? (file ? [file.path] : []);
+        while (played < paths.length && !signal.aborted) {
+          const path = paths[played++];
+          yield { audio: await fetchFile({ path }), metrics: { ...metrics, files: undefined } };
+        }
       } else if (msg.type === "status") {
         if (msg.stage === "error") throw new ApiError(errorText(msg));
         if (msg.stage === "complete") return;
