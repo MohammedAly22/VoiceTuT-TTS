@@ -44,7 +44,7 @@ except ImportError:                       # local / dedicated GPU: no-op decorat
 import numpy as np
 
 from . import __version__
-from .engine import DEFAULT_REPO, GenerationParams, resolve_language, split_sentences
+from .engine import DEFAULT_REPO, GenerationParams, plan_chunks, resolve_language, with_pause
 from .normalization import ArabicNormalizer
 from .speakers import SpeakerRegistry
 
@@ -88,6 +88,24 @@ EXAMPLES = [
     "انا عايز آكُل حاجة خفيفة قبل ما أنام.",
     "الوَرَق ده مهم جداً، حطه في الدُرْج وماتنساهوش.",
     "المسلسل ده مِتْخَيِّل وكله تأليف، مفيش حاجة منه حقيقية.",
+]
+
+EXAMPLES_EN = [
+    "Good morning! I hope you had a great weekend and you're ready for a productive week.",
+    "The meeting has been moved to Thursday at 3:30, so please update your calendars.",
+    "Thank you for calling our support line. How can I help you today?",
+    "Your order of 3 items will arrive on 15/11/2026, and the total is $125.",
+    "I've been learning to cook lately, and honestly, my pasta is getting pretty good.",
+    "Don't forget to drink water and take short breaks while you're working.",
+    "The new update makes the app faster, smoother, and much easier to use.",
+    "We're launching the second version of our project next week. Stay tuned!",
+    "If you have any questions, send me an email at support@example.com.",
+    "Traffic was terrible this morning, it took me over an hour to get to the office.",
+    "This podcast is all about technology, startups, and the people behind them.",
+    "Please read the instructions carefully before you start the exam.",
+    "The weather is perfect today, let's go for a walk by the river.",
+    "Our team grew from 5 people to 40 in just two years.",
+    "Call me at +20 101 234 5678 when you get a chance.",
 ]
 
 # one dir for every generated wav (also whitelisted for Gradio file serving)
@@ -145,15 +163,17 @@ class MockTTS:
                    language=None, normalize=True, params=None, **_):
         params = params or GenerationParams()
         time.sleep(0.4 + 0.004 * len(text))
-        return self._babble(text, self._voice_pitch(speaker, ref_audio), params.speed)
+        f0 = self._voice_pitch(speaker, ref_audio)
+        return np.concatenate([with_pause(self._babble(c, f0, params.speed), self.sampling_rate, p)
+                               for c, p in plan_chunks(text)])
 
     def stream(self, text, *, speaker=None, ref_audio=None, ref_text=None,
                language=None, normalize=True, params=None, **_):
         params = params or GenerationParams()
         f0 = self._voice_pitch(speaker, ref_audio)
-        for sent in split_sentences(text):
+        for sent, pause in plan_chunks(text):
             time.sleep(0.25 + 0.003 * len(sent))
-            yield self.sampling_rate, self._babble(sent, f0, params.speed)
+            yield self.sampling_rate, with_pause(self._babble(sent, f0, params.speed), self.sampling_rate, pause)
 
 
 # --------------------------------------------------------------------------- GPU work
@@ -280,11 +300,12 @@ def api_info() -> dict:
         "max_chars": MAX_CHARS,
         "speakers": speakers,
         "examples": EXAMPLES,
+        "examples_en": EXAMPLES_EN,
     }
 
 
-def api_normalize(text: str) -> str:
-    return _STATE["tts"].normalizer.normalize(text or "")
+def api_normalize(text: str, language: str = "arz") -> str:
+    return _STATE["tts"].normalizer.normalize(text or "", language=_language(language))
 
 
 def api_synthesize(text, language, voice_mode, speaker, ref_audio, ref_text,
@@ -346,7 +367,7 @@ def build_api():
         inputs = [text, language, voice_mode, speaker, ref_audio, ref_text,
                   num_step, guidance, speed, normalize]
         btn.click(api_info, None, out_json, api_name="info", concurrency_limit=None)
-        btn.click(api_normalize, text, out_text, api_name="normalize", concurrency_limit=None)
+        btn.click(api_normalize, [text, language], out_text, api_name="normalize", concurrency_limit=None)
         btn.click(api_synthesize, inputs, [out_file, out_json], api_name="synthesize")
         btn.click(api_stream, inputs, [out_file, out_json], api_name="stream")
     return demo

@@ -20,6 +20,7 @@ export interface Info {
   max_chars: number;
   speakers: Speaker[];
   examples: string[];
+  examples_en?: string[];
 }
 
 export interface Metrics {
@@ -105,7 +106,8 @@ function payload(r: SynthRequest): unknown[] {
     r.language,
     r.voiceMode,
     r.voiceMode === "speaker" ? r.speaker ?? "" : "",
-    r.voiceMode === "clone" && r.refAudio ? handle_file(r.refAudio) : null,
+    // a File (not a bare Blob): @gradio/client checks `instanceof Buffer` before Blob, which throws in browsers
+    r.voiceMode === "clone" && r.refAudio ? handle_file(new File([r.refAudio], "reference.wav", { type: "audio/wav" })) : null,
     r.voiceMode === "clone" ? r.refText : "",
     r.numStep,
     r.guidance,
@@ -130,10 +132,10 @@ export async function getInfo(): Promise<Info> {
   }
 }
 
-export async function normalizeText(text: string): Promise<string> {
+export async function normalizeText(text: string, language: Language): Promise<string> {
   try {
     const c = await client();
-    const r = await c.predict("/normalize", [text]);
+    const r = await c.predict("/normalize", [text, language]);
     return String((r.data as unknown[])[0] ?? "");
   } catch (e) {
     throw new ApiError(errorText(e));

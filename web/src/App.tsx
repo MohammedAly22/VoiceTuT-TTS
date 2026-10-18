@@ -15,6 +15,7 @@ import { stopPreview, useTheme, useToasts } from "./hooks";
 type GenMode = "generate" | "stream";
 
 const FIRST_TEXT = "اتفقنا نعمل ال meeting بكرة الصبح، فياريت كل واحد يجهز ال presentation بتاعته.";
+const FIRST_TEXT_EN = "The meeting has been moved to Thursday at 3:30, so please update your calendars.";
 
 function loadParams(): Params {
   try {
@@ -90,7 +91,8 @@ export default function App() {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (e.code !== "Space" || t.closest("textarea, input, button, [role=slider], [role=option], a")) return;
-      if (engine.getState().mode !== "ready") return;
+      const mode = engine.getState().mode;
+      if (mode !== "ready" && mode !== "streaming") return;
       e.preventDefault();
       engine.toggle();
     };
@@ -241,7 +243,7 @@ export default function App() {
               language={language}
               onLanguage={setLanguage}
               maxChars={maxChars}
-              examples={info?.examples ?? [FIRST_TEXT]}
+              examples={language === "en" ? info?.examples_en ?? [FIRST_TEXT_EN] : info?.examples ?? [FIRST_TEXT]}
               onSubmit={generate}
               onToast={push}
             />

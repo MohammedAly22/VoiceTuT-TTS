@@ -7,14 +7,16 @@
 
 let ctx: AudioContext | null = null;
 
-export function audioContext(): AudioContext {
+/** The shared AudioContext. `resume=false` leaves a user-paused stream paused. */
+export function audioContext(resume = true): AudioContext {
   if (!ctx) ctx = new AudioContext();
-  if (ctx.state === "suspended") void ctx.resume();
+  if (resume && ctx.state === "suspended") void ctx.resume();
   return ctx;
 }
 
 export async function decode(buf: ArrayBuffer): Promise<AudioBuffer> {
-  return audioContext().decodeAudioData(buf.slice(0));
+  // decoding must not resume a stream the user paused
+  return audioContext(false).decodeAudioData(buf.slice(0));
 }
 
 export function mono(b: AudioBuffer): Float32Array {
@@ -139,6 +141,7 @@ class AudioEngine {
   private streamEnd = 0;
   private streamSr = 24000;
   private streamDone = false;
+  private streamPaused = false; // user paused a stream: the audio clock is suspended
 
   constructor() {
     this.el = new Audio();
@@ -186,7 +189,7 @@ class AudioEngine {
 
   currentTime(): number {
     if (this._state.mode === "streaming") {
-      const t = audioContext().currentTime - this.streamStart;
+      const t = audioContext(false).currentTime - this.streamStart;
       return Math.max(0, Math.min(t, this.streamEnd - this.streamStart));
     }
     return this.el.currentTime || 0;
@@ -229,7 +232,14 @@ class AudioEngine {
   }
 
   async play() {
+    if (this._state.mode === "streaming") {
+      this.streamPaused = false;
+      await audioContext(false).resume();
+      this.set({ playing: true });
+      return;
+    }
     if (this._state.mode !== "ready") return;
+    this.streamPaused = false;
     this.wire();
     audioContext();
     if (this.el.ended) this.el.currentTime = 0;
@@ -241,6 +251,14 @@ class AudioEngine {
   }
 
   pause() {
+    if (this._state.mode === "streaming") {
+      // freeze the stream: scheduled chunks and the progress clock stop together,
+      // new chunks keep arriving and are queued behind them
+      this.streamPaused = true;
+      void audioContext(false).suspend();
+      this.set({ playing: false });
+      return;
+    }
     this.el.pause();
   }
 
@@ -256,6 +274,7 @@ class AudioEngine {
 
   // ---- streaming
   beginStream() {
+    this.streamPaused = false;
     this.wire();
     this.stopAll();
     this.streamParts = [];
@@ -271,7 +290,7 @@ class AudioEngine {
 
   async pushChunk(buf: ArrayBuffer) {
     if (this._state.mode !== "streaming") return;
-    const c = audioContext();
+    const c = audioContext(false);
     const decoded = await decode(buf);
     if (this._state.mode !== "streaming") return;
     this.streamSr = decoded.sampleRate;
@@ -298,6 +317,10 @@ class AudioEngine {
     if (this._state.mode !== "streaming") return;
     this.streamDone = true;
     if (cancelled || !this.streamParts.length) {
+      if (this.streamPaused) {
+        this.streamPaused = false;
+        void audioContext(false).resume();
+      }
       this.streamSources.forEach((s) => {
         try {
           s.stop();
@@ -311,7 +334,7 @@ class AudioEngine {
 
   private maybeFinishStream(force = false) {
     if (this._state.mode !== "streaming" || !this.streamDone) return;
-    const c = audioContext();
+    const c = audioContext(false);
     if (!force && c.currentTime < this.streamEnd - 0.05) return;
     this.streamSources = [];
     if (!this.streamParts.length) {

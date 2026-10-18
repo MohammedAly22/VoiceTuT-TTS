@@ -78,13 +78,13 @@ const Editor = forwardRef<
     }
     setNormBusy(true);
     const id = setTimeout(() => {
-      normalizeText(text)
+      normalizeText(text, language)
         .then(setNorm)
         .catch(() => setNorm("—"))
         .finally(() => setNormBusy(false));
     }, 380);
     return () => clearTimeout(id);
-  }, [text, showNorm]);
+  }, [text, showNorm, language]);
 
   const setWithCaret = (value: string, caret: number) => {
     onText(value);

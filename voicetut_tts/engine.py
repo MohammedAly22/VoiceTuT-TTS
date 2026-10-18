@@ -115,6 +115,118 @@ def split_sentences(text: str, max_chars: int = 220) -> List[str]:
     return chunks or ([text.strip()] if text.strip() else [])
 
 
+# --------------------------------------------------------------------------- chunk planning
+# Silence (seconds) inserted where the writer asked for a pause, or where a chunk is cut.
+PAUSES = {"paragraph": 0.75, "line": 0.45, "ellipsis": 0.5, "sentence": 0.2, "clause": 0.1, "word": 0.0}
+_HARD_BREAK = re.compile(r"(\n[ \t]*\n\s*)|([ \t]*\n\s*)|(\s*(?:\.{2,}|…)\s*)")
+_SENT_END = re.compile(r"(?<=[.!?؟])\s+")
+_CLAUSE_END = re.compile(r"(?<=[،,;؛:])\s+")
+
+
+def _split_long(seg: str, budget: int) -> List[Tuple[str, float]]:
+    """Break one paragraph-piece into units no longer than `budget` characters:
+    sentences first, then clauses, then words. Each unit carries the pause after it."""
+    units: List[Tuple[str, float]] = []
+    for sent in (s for s in _SENT_END.split(seg) if s.strip()):
+        if len(sent) <= budget:
+            units.append((sent, PAUSES["sentence"]))
+            continue
+        for clause in (c for c in _CLAUSE_END.split(sent) if c.strip()):
+            if len(clause) <= budget:
+                units.append((clause, PAUSES["clause"]))
+                continue
+            buf = ""
+            for word in clause.split():
+                if buf and len(buf) + 1 + len(word) > budget:
+                    units.append((buf, PAUSES["word"]))
+                    buf = word
+                else:
+                    buf = f"{buf} {word}".strip()
+            if buf:
+                units.append((buf, PAUSES["clause"]))
+    return units
+
+
+def _is_fragment(seg: str, min_chars: int) -> bool:
+    """Too short to synthesize alone: unfinished bits ("فاا", "كل ده") and very short lines."""
+    if len(seg) < 8:
+        return True
+    return len(seg) < min_chars and not seg.rstrip().endswith((".", "!", "?", "؟"))
+
+
+def _join(a: str, b: str) -> str:
+    a = a.rstrip("،, ")
+    return f"{a} {b}" if a.endswith((".", "!", "?", "؟")) else f"{a.rstrip('.')}، {b}"
+
+
+def plan_chunks(text: str, first_max: int = 110, max_chars: int = 220,
+                min_chars: int = 25) -> List[Tuple[str, float]]:
+    """Plan synthesis chunks by character budget, honouring the writer's pauses.
+
+    * Blank lines, line breaks and ellipses ("...", "…") are pauses: they end a chunk and
+      become real silence instead of being read as text.
+    * Inside a paragraph, sentences are packed together up to the budget (`first_max` for
+      the first chunk, so streaming starts fast, then `max_chars`), cutting at sentence,
+      then clause, then word boundaries only when needed.
+    * Fragments shorter than `min_chars` (e.g. "فاا...") are merged into the next chunk
+      with a comma, because tiny generations sound unnatural.
+
+    Returns ``[(chunk_text, pause_seconds_after), ...]``; the last pause is 0.
+    """
+    text = (text or "").replace("\r\n", "\n").strip()
+    if not text:
+        return []
+    # 1) cut at hard breaks
+    pieces: List[List] = []
+    pos = 0
+    for m in _HARD_BREAK.finditer(text):
+        seg = text[pos:m.start()].strip()
+        kind = "paragraph" if m.group(1) else "line" if m.group(2) else "ellipsis"
+        if seg:
+            pieces.append([seg, PAUSES[kind]])
+        elif pieces:
+            pieces[-1][1] = max(pieces[-1][1], PAUSES[kind])
+        pos = m.end()
+    if text[pos:].strip():
+        pieces.append([text[pos:].strip(), 0.0])
+    # 2) merge tiny fragments forward (or backward for a trailing one)
+    merged: List[List] = []
+    for seg, pause in pieces:
+        if merged and _is_fragment(merged[-1][0], min_chars):
+            seg = _join(merged.pop()[0], seg)
+        merged.append([seg, pause])
+    if len(merged) > 1 and _is_fragment(merged[-1][0], min_chars):
+        last = merged.pop()
+        merged[-1] = [_join(merged[-1][0], last[0]), last[1]]
+    # 3) pack each piece into budget-sized chunks
+    chunks: List[Tuple[str, float]] = []
+    for seg, pause in merged:
+        budget = first_max if not chunks else max_chars
+        if len(seg) <= budget:
+            chunks.append((seg, pause))
+            continue
+        buf, buf_pause = "", 0.0
+        for unit, unit_pause in _split_long(seg, budget):
+            budget = first_max if not chunks else max_chars
+            if buf and len(buf) + 1 + len(unit) > budget:
+                chunks.append((buf, buf_pause))
+                buf = unit
+            else:
+                buf = f"{buf} {unit}".strip()
+            buf_pause = unit_pause
+        if buf:
+            chunks.append((buf, pause))
+    if chunks:
+        chunks[-1] = (chunks[-1][0], 0.0)
+    return chunks
+
+
+def with_pause(wav: np.ndarray, sr: int, pause: float) -> np.ndarray:
+    if pause <= 0:
+        return wav
+    return np.concatenate([np.asarray(wav, dtype=np.float32), np.zeros(int(sr * pause), dtype=np.float32)])
+
+
 def resolve_language(language: Optional[str]) -> str:
     """Map any English/Egyptian alias to a supported code; reject everything else."""
     if language is None:
@@ -239,7 +351,7 @@ class VoiceTutTTS:
     def _generate_one(self, text, language, ref_audio, ref_text, instruct, params,
                       normalize) -> np.ndarray:
         if normalize:
-            text = self.normalizer.normalize(text)
+            text = self.normalizer.normalize(text, language=language)
         audios = self.model.generate(
             text=text, language=language, ref_audio=ref_audio, ref_text=ref_text,
             instruct=instruct, **params.as_kwargs(),
@@ -274,7 +386,14 @@ class VoiceTutTTS:
         params = self._merge_params(params, param_overrides)
         ra, rt, ins = self._resolve_voice(speaker, ref_audio, ref_text, instruct)
 
-        wav = self._generate_one(text, lang, ra, rt, ins, params, normalize)
+        chunks = plan_chunks(text)
+        if len(chunks) == 1:
+            wav = self._generate_one(chunks[0][0], lang, ra, rt, ins, params, normalize)
+        else:   # long text / explicit pauses: generate chunk by chunk and join with real silences
+            wav = np.concatenate([
+                with_pause(self._generate_one(chunk, lang, ra, rt, ins, params, normalize), self.sampling_rate, pause)
+                for chunk, pause in chunks
+            ])
         if output:
             self.save(wav, output)
         return wav
@@ -290,16 +409,17 @@ class VoiceTutTTS:
         instruct: Optional[str] = None,
         language: Optional[str] = None,
         normalize: bool = True,
+        first_chars: int = 110,
         max_chars: int = 220,
         params: Optional[GenerationParams] = None,
         **param_overrides,
     ) -> Iterator[Tuple[int, np.ndarray]]:
         """
-        TRUE streaming: split long text into sentences and yield
-        ``(sampling_rate, waveform_chunk)`` as each sentence finishes generating.
+        TRUE streaming: yield ``(sampling_rate, waveform_chunk)`` as each chunk finishes.
 
-        Lets a caller start playback after the first (short) sentence instead of
-        waiting for the whole paragraph — minimizes time-to-first-audio.
+        Chunks are planned by character budget (see :func:`plan_chunks`): a short first
+        chunk for low time-to-first-audio, then ~`max_chars` per chunk. Line breaks and
+        ellipses become real silence appended to the chunk, so playback stays smooth.
         """
         if not text or not text.strip():
             return
@@ -307,17 +427,13 @@ class VoiceTutTTS:
         params = self._merge_params(params, param_overrides)
         ra, rt, ins = self._resolve_voice(speaker, ref_audio, ref_text, instruct)
 
-        for sent in split_sentences(text, max_chars=max_chars):
-            wav = self._generate_one(sent, lang, ra, rt, ins, params, normalize)
-            yield self.sampling_rate, wav
+        for chunk, pause in plan_chunks(text, first_max=first_chars, max_chars=max_chars):
+            wav = self._generate_one(chunk, lang, ra, rt, ins, params, normalize)
+            yield self.sampling_rate, with_pause(wav, self.sampling_rate, pause)
 
-    def synthesize_long(self, text: str, output: str, *, gap_ms: int = 120, **kwargs) -> np.ndarray:
-        """Stream-generate long text and concatenate chunks (with small gaps) into one WAV."""
-        gap = np.zeros(int(self.sampling_rate * gap_ms / 1000), dtype=np.float32)
-        pieces: List[np.ndarray] = []
-        for _, chunk in self.stream(text, **kwargs):
-            pieces.append(chunk.astype(np.float32))
-            pieces.append(gap)
+    def synthesize_long(self, text: str, output: str, **kwargs) -> np.ndarray:
+        """Stream-generate long text and concatenate the chunks (pauses included) into one WAV."""
+        pieces = [chunk.astype(np.float32) for _, chunk in self.stream(text, **kwargs)]
         wav = np.concatenate(pieces) if pieces else np.zeros(1, dtype=np.float32)
         self.save(wav, output)
         return wav

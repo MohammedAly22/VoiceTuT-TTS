@@ -81,10 +81,47 @@ def test_phone_pairs_as_tens():
     assert "حداشر" in out and "سبعه واربعين" in out and "تسعه وعشرين" in out
 
 
-def test_phone_pauses_and_leading_zero():
+def test_phone_plain_and_leading_zero():
     out = _say_phone_number("01147450629")
-    assert "،" in out                      # pauses between 2-digit groups
+    assert "،" not in out and "," not in out          # groups separated by spaces only
+    assert not re.search(r"[ً-ْ]", out)     # generated words carry no diacritics
     assert "زيرو" in _norm(out).split("حداشر", 1)[1]  # "06" read as "زيرو سته", not bare "سته"
+
+
+# --------------------------------------------------------------- generated words: no diacritics
+@pytest.mark.parametrize("text", ["عندي 1250 جنيه", "الساعة 7:45", "خصم 25%", "يوم 14/3/2024", "3.5 كجم"])
+def test_generated_words_have_no_diacritics(norm, text):
+    assert not re.search(r"[ً-ْ]", norm(text))
+
+
+# --------------------------------------------------------------- units only after numbers
+def test_unit_word_without_number_is_kept(norm):
+    assert norm("انا اخدت كم كبير من المعلومات") == "انا اخدت كم كبير من المعلومات"
+    assert "سم" in norm("ده سم قاتل")
+
+
+def test_unit_after_number_is_expanded(norm):
+    out = norm("المسافة 12 كم والطول 30 سم")
+    assert "كيلومتر" in out and "سنتيمتر" in out
+
+
+# --------------------------------------------------------------- language of numbers
+def test_numbers_follow_their_language_in_code_switching(norm):
+    assert "three" in norm("عندي 3 tasks النهارده")
+    assert "تلاتة" in norm("عندي 3 مشاريع")
+    assert "dollars" in norm("ال project ده cost 50 dollars") or "fifty" in norm("ال project ده cost 50 dollars")
+
+
+def test_english_language_reads_everything_in_english(norm):
+    out = norm("The meeting is at 3:30 and costs $250 for 2 people", language="en")
+    assert "three thirty" in out and "two hundred fifty dollars" in out and "two people" in out
+    assert not re.search(r"[ء-ي]", out)
+
+
+# --------------------------------------------------------------- pauses
+def test_ellipsis_and_line_breaks_become_pauses(norm):
+    out = norm("بعد النجاح...\nكان لازم")
+    assert "..." not in out and "\n" not in out and "،" in out
 
 
 def test_name_transliteration():
@@ -149,3 +186,27 @@ def test_long_sentence_wrap():
     long = "كلمة، " * 80
     chunks = split_sentences(long, max_chars=100)
     assert all(len(c) <= 110 for c in chunks)
+
+
+# --------------------------------------------------------------- streaming chunk planner
+from voicetut_tts.engine import plan_chunks, PAUSES
+
+
+def test_plan_chunks_respects_written_pauses():
+    chunks = plan_chunks("بعد النجاح اللي حققته النسخة الأولى...\nكان لازم النسخة التانية تكون أحسن.\n\nدعم التشكيل.")
+    texts = [c for c, _ in chunks]
+    assert all("..." not in t and "\n" not in t for t in texts)
+    assert chunks[0][1] == PAUSES["ellipsis"] and chunks[1][1] == PAUSES["paragraph"] and chunks[-1][1] == 0.0
+    assert texts[-1] == "دعم التشكيل."                 # a complete short sentence keeps its own pause
+
+
+def test_plan_chunks_merges_fragments():
+    chunks = plan_chunks("فـاا... رحبوا معايا بالنسخة الجديدة من الموديل.")
+    assert len(chunks) == 1 and chunks[0][0].startswith("فـاا، رحبوا")
+
+
+def test_plan_chunks_character_budget():
+    long = "، ".join(["دي جملة طويلة شوية عشان نختبر التقسيم"] * 30) + "."
+    chunks = plan_chunks(long, first_max=110, max_chars=220)
+    assert len(chunks[0][0]) <= 110 and all(len(c) <= 220 for c, _ in chunks)
+    assert "".join(c for c, _ in chunks).replace(" ", "").replace("،", "") == long.replace(" ", "").replace("،", "")

@@ -79,7 +79,8 @@ export default function Output({
 }) {
   const st = useEngine();
   const [dl, setDl] = useState(false);
-  const canPlay = st.mode === "ready";
+  const canPlay = st.mode === "ready" || st.mode === "streaming"; // pause/resume also works mid-stream
+  const canDownload = st.mode === "ready";
 
   return (
     <div className="card">
@@ -124,8 +125,8 @@ export default function Output({
           className="btn sm"
           href={st.url ?? undefined}
           download="voicetut.wav"
-          aria-disabled={!canPlay}
-          style={canPlay ? undefined : { opacity: 0.5, pointerEvents: "none" }}
+          aria-disabled={!canDownload}
+          style={canDownload ? undefined : { opacity: 0.5, pointerEvents: "none" }}
           onClick={() => {
             setDl(true);
             setTimeout(() => setDl(false), 1200);
