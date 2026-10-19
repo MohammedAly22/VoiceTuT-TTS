@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getInfo, streamSynth, synthesize, type Info, type Language, type Metrics, type SynthRequest, type VoiceMode } from "./api";
 import { audioContext, concat, decode, encodeWav, engine, mono } from "./audio";
 import Editor, { type EditorHandle } from "./components/Editor";
-import Guide from "./components/Guide";
 import { Header, Hero } from "./components/Header";
 import Output, { type HistoryItem, type RunState } from "./components/Output";
 import Settings, { DEFAULT_PARAMS, type Params } from "./components/Settings";
@@ -52,7 +51,6 @@ export default function App() {
   const abort = useRef<AbortController | null>(null);
   const editor = useRef<EditorHandle>(null);
   const editorWrap = useRef<HTMLDivElement>(null);
-  const guide = useRef<HTMLElement>(null);
 
   // ---- server info (retries while a Space is waking up)
   useEffect(() => {
@@ -214,12 +212,6 @@ export default function App() {
     await engine.load(h.audio);
   };
 
-  const tryExample = (sentence: string) => {
-    setText(sentence);
-    editorWrap.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => editor.current?.focus(), 450);
-  };
-
   const busyLabel = genMode === "stream" ? "بيجهّز أول جملة…" : "بيولّد الصوت…";
 
   return (
@@ -302,11 +294,9 @@ export default function App() {
           </aside>
         </motion.div>
 
-        <Guide ref={guide} onTry={tryExample} />
-
         <footer className="footer">
           <span>
-            VoiceTut-TTS <span className="ltr">v2{info ? ` · ${info.version}` : ""}</span>
+            VoiceTut-TTS <span className="ltr">v1{info ? ` · ${info.version}` : ""}</span>
           </span>
           <a href="https://huggingface.co/mohammedaly22/VoiceTut-TTS" target="_blank" rel="noopener">
             الموديل على HuggingFace

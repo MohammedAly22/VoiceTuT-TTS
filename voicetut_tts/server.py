@@ -293,7 +293,7 @@ def api_info() -> dict:
     return {
         "name": "VoiceTut-TTS",
         "version": __version__,
-        "model_version": "v2",
+        "model_version": "v1",
         "device": _STATE["device"],
         "mock": isinstance(tts, MockTTS),
         "sampling_rate": tts.sampling_rate,

@@ -24,7 +24,7 @@ export function Header({
           <span className="wordmark">
             VoiceTut<span>TTS</span>
           </span>
-          <span className="ver">v2</span>
+          <span className="ver">v1</span>
         </a>
         <div className="top-actions">
           <span className="pill device" title="الجهاز اللي شغال عليه الموديل">

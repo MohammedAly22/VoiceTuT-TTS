@@ -22,24 +22,12 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech system fine-tuned from [OmniVo
 
 > **Why "VoiceTut"?** *Tut* — after the boy-king **Tutankhamun** (توت عنخ آمون) — anchors the model in Egyptian identity, just as our companion ASR model **[QwenCleo-ASR](https://github.com/MohammedAly22/qwencleo-asr)** is named after **Cleopatra**. Together they form an Egyptian speech stack: **Cleo listens, Tut speaks.** 🎙️🗣️
 
-## 🆕 What's new in v2
-
-**VoiceTut-TTS-v2** is a more capable model that **supports Arabic diacritics (التشكيل)**. Text without diacritics works exactly as before, and when a word is pronounced wrong you can now fix it by adding diacritics to that word:
-
-```python
-tts.synthesize("انا مخطط للموضوع ده", speaker="Mohammed")    # may read مُخَطَّط (a chart)
-tts.synthesize("انا مْخَطَّط للموضوع ده", speaker="Mohammed")  # reads مْخَطَّط (planning)
-```
-
-You don't need to diacritize the whole sentence — the right mark on the right letter is enough.
-
 ## ✨ Features
 
 - 🎯 **Egyptian-first** — fine-tuned specifically on Egyptian Arabic, not generic MSA.
 - 🔀 **Code-switching** — handles real Arabic + English mixed speech (`عندي meeting بكرة`).
 - 🗣️ **19 built-in voices** — male & female speakers.
 - 🧬 **Zero-shot cloning** — clone any voice from a few seconds of reference audio.
-- ✍️ **Diacritics support (v2)** — add التشكيل to any word to control exactly how it is pronounced.
 - 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + an English→Arabic name map. Your diacritics are always kept.
 - ⚡ **True streaming** — long text is split into sentences and yielded as audio chunks for low time-to-first-audio.
 - 📦 **pip-installable** — `pip install voicetut-tts` (+ OmniVoice from GitHub), or clone and run locally.
@@ -111,9 +99,6 @@ tts.synthesize("النهارده الجو حلو اوي",
 tts.synthesize("عندي meeting الساعة 3:30",
                speaker="Yasmin", num_step=48, guidance_scale=2.5, speed=1.1,
                output="cs.wav")
-
-# 4) Fix a word's pronunciation with diacritics
-tts.synthesize("دي عِشْرة عمر يا صاحبي", speaker="Ahmed", output="fixed.wav")
 ```
 
 ### True streaming (long text)
@@ -148,7 +133,7 @@ norm("عندي 250 جنيه والميعاد 3:30 يوم 14/3/2024")
 | `14/3/2024` | أربعتاشر مارس ألفين وأربعة وعشرين |
 | `a.b@gmail.com` | a dot b at gmail dot com |
 
-Diacritics you write are passed to the model untouched, so normalization never undoes a pronunciation fix.
+Diacritics you write are passed to the model untouched.
 
 **English names**
 
@@ -169,7 +154,7 @@ voicetut --text "نص طويل..." --speaker Ahmed --stream --output long.wav
 
 ## 🌐 Serving
 
-A modern Arabic-first (RTL) **web app** built with React: light/dark mode, an animated live waveform, a diacritics toolbar to fix pronunciation in place, a searchable voice gallery with previews, voice cloning by upload or microphone, one-shot or streaming generation, and live latency metrics. It is the same UI that runs on the [HuggingFace Space](https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS).
+A modern Arabic-first (RTL) **web app** built with React: light/dark mode, an animated live waveform, a diacritics toolbar, a searchable voice gallery with previews, voice cloning by upload or microphone, one-shot or streaming generation, and live latency metrics. It is the same UI that runs on the [HuggingFace Space](https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS).
 
 ```bash
 pip install "voicetut-tts[web]"

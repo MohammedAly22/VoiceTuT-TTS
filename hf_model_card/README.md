@@ -14,7 +14,6 @@ tags:
 - code-switching
 - voice-cloning
 - omnivoice
-- diacritics
 base_model:
 - k2-fsa/OmniVoice
 ---
@@ -41,16 +40,6 @@ VoiceTut-TTS is an Egyptian-Arabic text-to-speech model fine-tuned from [OmniVoi
 
 > **Why "VoiceTut"?** *Tut* — after the boy-king **Tutankhamun** (توت عنخ آمون) — anchors the model in Egyptian identity, just as our companion ASR model **[QwenCleo-ASR](https://github.com/MohammedAly22/qwencleo-asr)** is named after **Cleopatra**. Together they form an Egyptian speech stack: **Cleo listens, Tut speaks.** 🎙️🗣️
 
-## 🆕 What's new in v2
-
-**VoiceTut-TTS-v2** is a more capable model that **supports Arabic diacritics (التشكيل)**. Plain text works exactly as before, and if a word is pronounced wrong you can fix it by adding diacritics to that word — the model follows them.
-
-```python
-tts.synthesize("انا مْخَطَّط للموضوع ده", speaker="Mohammed", output="fixed.wav")
-```
-
-The previous weights remain available on the [`v1` branch](https://huggingface.co/mohammedaly22/VoiceTut-TTS/tree/v1).
-
 ## 🔗 Links
 
 - 🎧 **Audio demo (VoiceTut vs. base OmniVoice):** https://mohammedaly22.github.io/VoiceTuT-TTS/
@@ -64,7 +53,6 @@ The previous weights remain available on the [`v1` branch](https://huggingface.c
 - 🔀 **Code-switching** — handles real Arabic + English mixed speech (`عندي meeting بكرة`).
 - 🗣️ **19 built-in voices** — male & female speakers.
 - 🧬 **Zero-shot cloning** — clone any voice from a few seconds of reference audio.
-- ✍️ **Diacritics support (v2)** — add التشكيل to any word to control its pronunciation.
 - 🔢 **Robust normalization** — numbers, dates, times, currencies, phones, emails, URLs, abbreviations + an English→Arabic name map.
 - ⚡ **True streaming** — long text is split into sentences and yielded as audio chunks.
 
@@ -95,9 +83,6 @@ tts.synthesize("النهارده الجو حلو اوي",
 # 3) Code-switching + generation params
 tts.synthesize("عندي meeting الساعة 3:30 ومعايا ال presentation",
                speaker="Yasmin", num_step=48, guidance_scale=2.5, speed=1.05, output="cs.wav")
-
-# 4) Fix a word's pronunciation with diacritics
-tts.synthesize("دي عِشْرة عمر يا صاحبي", speaker="Ahmed", output="fixed.wav")
 ```
 
 Streaming long text:
