@@ -1,0 +1,205 @@
+{
+ "sections": [
+  {
+   "id": "diacritics",
+   "items": [
+    {
+     "note": "مُخَطَّط ↔ مْخَطَّط",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "انا مخطط للموضوع ده من بدري",
+       "v1": "v2/fix1_plain_v1.mp3",
+       "v2": "v2/fix1_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "انا مْخَطَّط للموضوع ده من بدري",
+       "v1": "v2/fix1_diac_v1.mp3",
+       "v2": "v2/fix1_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "عَشَرة ↔ عِشْرة",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "دي عشرة عمر يا صاحبي",
+       "v1": "v2/fix2_plain_v1.mp3",
+       "v2": "v2/fix2_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "دي عِشْرة عمر يا صاحبي",
+       "v1": "v2/fix2_diac_v1.mp3",
+       "v2": "v2/fix2_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "الحُبّ ↔ الحَبّ",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "العصافير بتاكل الحب من الأرض",
+       "v1": "v2/fix3_plain_v1.mp3",
+       "v2": "v2/fix3_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "العصافير بتاكل الحَبّ من الأرض",
+       "v1": "v2/fix3_diac_v1.mp3",
+       "v2": "v2/fix3_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "اكل ↔ آكُل",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "انا عايز اكل حاجة دلوقتي",
+       "v1": "v2/fix4_plain_v1.mp3",
+       "v2": "v2/fix4_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "انا عايز آكُل حاجة دلوقتي",
+       "v1": "v2/fix4_diac_v1.mp3",
+       "v2": "v2/fix4_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "مدرس ↔ مُدَرِّس",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "هو كان مدرس في المدرسة دي",
+       "v1": "v2/fix5_plain_v1.mp3",
+       "v2": "v2/fix5_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "هو كان مُدَرِّس في المَدْرَسة دي",
+       "v1": "v2/fix5_diac_v1.mp3",
+       "v2": "v2/fix5_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "متخيل ↔ مِتْخَيِّل",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "المسلسل ده متخيل وكله تأليف",
+       "v1": "v2/fix6_plain_v1.mp3",
+       "v2": "v2/fix6_plain_v2.mp3"
+      },
+      {
+       "label": "بالتشكيل",
+       "text": "المسلسل ده مِتْخَيِّل وكله تأليف",
+       "v1": "v2/fix6_diac_v1.mp3",
+       "v2": "v2/fix6_diac_v2.mp3"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "heldout",
+   "items": [
+    {
+     "note": "جملة جديدة على الموديل",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "فعلا وبقت شاطره قوي وتحسنت بسرعه جدا المدربين",
+       "v1": "v2/heldout1_plain_v1.mp3",
+       "v2": "v2/heldout1_plain_v2.mp3"
+      },
+      {
+       "label": "متشكّلة بالكامل",
+       "text": "فِعْلًا وِبَقِتْ شَاطْرُه قَوِي وِتَحَسِّنْتِ بْسُرْعَه جِدًّا الْمُدَرِّبِينْ",
+       "v1": "v2/heldout1_diac_v1.mp3",
+       "v2": "v2/heldout1_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "جملة جديدة على الموديل",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "بتاع ان انا اوصل لعربيه فيها جزء مصري",
+       "v1": "v2/heldout2_plain_v1.mp3",
+       "v2": "v2/heldout2_plain_v2.mp3"
+      },
+      {
+       "label": "متشكّلة بالكامل",
+       "text": "بِتَاعْ انَّ انَا اوْصَلْ لِعَرَبِيَّه فِيهَا جُزْءِ مَصْرِي",
+       "v1": "v2/heldout2_diac_v1.mp3",
+       "v2": "v2/heldout2_diac_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "جملة جديدة على الموديل",
+     "speaker": "Mohammed",
+     "pair": [
+      {
+       "label": "بدون تشكيل",
+       "text": "نبتدي بالفيلم الفيلم احنا صورناه بقالنا فترة",
+       "v1": "v2/heldout3_plain_v1.mp3",
+       "v2": "v2/heldout3_plain_v2.mp3"
+      },
+      {
+       "label": "متشكّلة بالكامل",
+       "text": "نِبْتِدِي بِالْفِيْلْمْ الْفِيْلْمْ احْنَا صَوَّرْنَاه بَقَالْنَا فَتْرَة",
+       "v1": "v2/heldout3_diac_v1.mp3",
+       "v2": "v2/heldout3_diac_v2.mp3"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "general",
+   "items": [
+    {
+     "note": "Code-switching",
+     "speaker": "Yasmin",
+     "pair": [
+      {
+       "label": "",
+       "text": "بصراحة ال feedback اللي جالي من ال manager كان كويس اوي، بس في شوية comments محتاجين نخلصها.",
+       "v1": "v2/general1_v1.mp3",
+       "v2": "v2/general1_v2.mp3"
+      }
+     ]
+    },
+    {
+     "note": "أرقام ومواعيد وتليفون",
+     "speaker": "Yasmin",
+     "pair": [
+      {
+       "label": "",
+       "text": "عندي ميعاد مع الدكتور الساعة 3:30 وبعدها هكلمك على 01147450629.",
+       "v1": "v2/general2_v1.mp3",
+       "v2": "v2/general2_v2.mp3"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

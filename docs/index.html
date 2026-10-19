@@ -310,6 +310,65 @@
       color: var(--muted);
       padding: 40px;
     }
+
+    /* tabs: VoiceTut vs OmniVoice | V2 vs V1 */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tabs button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 9px 20px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .tabs button:hover {
+      color: var(--text);
+      border-color: var(--blue);
+    }
+
+    .tabs button[aria-selected="true"] {
+      color: #fff;
+      background: var(--blue);
+      border-color: transparent;
+    }
+
+    .tabs .new {
+      font-size: 10px;
+      padding: 2px 7px;
+      margin-inline-start: 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .2);
+      vertical-align: middle;
+    }
+
+    /* V2 vs V1: one card per sentence, one row per version of the text */
+    .pair-row+.pair-row {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .pair-row .row-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .col.v1 .dot {
+      background: #777;
+    }
   </style>
 </head>
 
@@ -318,8 +377,8 @@
     <div class="wrap">
       <img src="banner.png" alt="VoiceTut-TTS" />
       <h1>VoiceTut<span class="accent">-TTS</span> — عينات صوتية</h1>
-      <p>قارن صوت VoiceTut-TTS (المُحسَّن للمصري) بالموديل الأساسي OmniVoice<br />
-        Compare VoiceTut-TTS vs. base OmniVoice — Egyptian Arabic, code-switching & English</p>
+      <p>قارن VoiceTut-TTS بالموديل الأساسي OmniVoice، وقارن النسخة التانية V2 بالأولى V1<br />
+        Compare VoiceTut-TTS vs. base OmniVoice, and VoiceTut V2 vs. V1</p>
       <div class="links">
         <a class="primary" href="https://huggingface.co/spaces/mohammedaly22/VoiceTut-TTS">🚀 جرّب الموديل / Live
           Demo</a>
@@ -331,6 +390,10 @@
   </header>
 
   <nav class="nav">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="base" aria-selected="true">VoiceTut vs OmniVoice</button>
+      <button role="tab" data-tab="v2" aria-selected="false">V2 vs V1<span class="new">جديد</span></button>
+    </div>
     <div class="wrap" id="navLinks"></div>
   </nav>
 
@@ -355,15 +418,24 @@
       customer_service: { title: "📞 خدمة العملاء / Customer Service", sub: "سيناريوهات خدمة عملاء (VoiceTut فقط)." },
       cloning: { title: "🧬 استنساخ صوت / Zero-shot Cloning", sub: "استنساخ من مرجع قصير." },
     };
+    const V2_META = {
+      diacritics: { title: "✍️ التشكيل بيصلّح النطق / Diacritics fix pronunciation",
+        sub: "نفس الجملة من غير تشكيل وبالتشكيل، بـ V1 و V2. اسمع الكلمة المتشكّلة في كل نسخة." },
+      heldout: { title: "📖 جمل متشكّلة بالكامل / Fully diacritized sentences",
+        sub: "جمل جديدة على الموديل، من غير تشكيل ومتشكّلة بالكامل." },
+      general: { title: "🔀 الإنجليزي والأرقام / Code-switching & numbers",
+        sub: "جمل عادية من غير تشكيل، للتأكد إن النطق العادي فضل كويس." },
+    };
     // cache-buster: a version string derived from the manifest content (below). Re-generated
     // samples (same filename, new content) change the manifest -> new VER -> fresh fetch.
     // Stable across reloads while content is unchanged, so the browser cache still works.
-    let VER = "0";
-    const A = (f) => `audio/${f}?v=${VER}`;
+    const VER = { base: "0", v2: "0" };
+    const A = (f, tab) => `audio/${f}?v=${VER[tab]}`;
+    const TYPE = (f) => (f.endsWith(".mp3") ? "audio/mpeg" : "audio/wav");
 
-    function audioCol(cls, label, file) {
+    function audioCol(cls, label, file, tab = "base") {
       return `<div class="col ${cls}"><div class="label"><span class="dot"></span>${label}</div>
-        <audio controls preload="none"><source src="${A(file)}" type="audio/wav"></audio></div>`;
+        <audio controls preload="none"><source src="${A(file, tab)}" type="${TYPE(file)}"></audio></div>`;
     }
 
     function sampleCard(it) {
@@ -382,6 +454,20 @@
       </div>`;
     }
 
+    // V2 vs V1: one card per sentence, one row per version of the text (plain / diacritized)
+    function v2Card(it) {
+      const spk = it.speaker ? `<span class="badge spk">${it.speaker}</span>` : "";
+      const rows = it.pair.map((r) => `<div class="pair-row">
+          ${r.label ? `<div class="row-label">${r.label}</div>` : ""}
+          <div class="text">${r.text}</div>
+          <div class="ab">${audioCol("ours", "VoiceTut V2", r.v2, "v2")}${audioCol("v1", "VoiceTut V1", r.v1, "v2")}</div>
+        </div>`).join("");
+      return `<div class="sample">
+        <div class="meta"><span class="badge lang-arz">مصري</span>${spk}<span class="badge note">${it.note || ""}</span></div>
+        ${rows}
+      </div>`;
+    }
+
     // small stable hash of a string (for the cache-buster version)
     function hashStr(s) {
       let h = 5381;
@@ -389,40 +475,58 @@
       return (h >>> 0).toString(36);
     }
 
-    async function load() {
-      let manifest, raw;
-      try {
-        // fetch the manifest itself fresh (no-store) so VER always reflects current content
-        raw = await (await fetch("audio/manifest.json", { cache: "no-store" })).text();
-        manifest = JSON.parse(raw);
-        VER = hashStr(raw);          // version = hash of manifest -> changes only when samples change
-      }
-      catch (e) {
-        document.getElementById("content").innerHTML =
-          '<div id="loading">لسه مفيش عينات — شغّل <code>generate_samples.py</code> وارفع docs/audio/.<br/>'
-          + 'No samples yet — run <code>generate_samples.py</code> and push <code>docs/audio/</code>.</div>';
-        return;
-      }
+    async function fetchManifest(url, tab) {
+      // fetched fresh (no-store) so the version always reflects current content
+      const raw = await (await fetch(url, { cache: "no-store" })).text();
+      VER[tab] = hashStr(raw);
+      return JSON.parse(raw);
+    }
+
+    const CAUTION = {
+      cloning: '⚠️ <b>تنويه أخلاقي:</b> عينات استنساخ الصوت دي الغرض منها إظهار جودة الموديل وحالات '
+        + 'الاستخدام المفيدة فقط (زي المساعدات الصوتية والمحتوى التعليمي). ممنوع استخدام استنساخ '
+        + 'الصوت لانتحال شخصية أي حد أو خداع أو إيذاء أي شخص.<br/>'
+        + '<span dir="ltr"><b>Ethical note:</b> these voice-cloning samples are for demonstrating quality '
+        + 'and beneficial use cases only — never to impersonate, deceive, or harm anyone.</span>',
+    };
+
+    const TABS = {
+      base: { manifest: "audio/manifest.json", meta: SECTION_META, card: sampleCard },
+      v2: { manifest: "audio/v2/manifest.json", meta: V2_META, card: v2Card },
+    };
+    const cache = {};
+
+    async function show(tab) {
+      document.querySelectorAll(".tabs button").forEach((b) =>
+        b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
       const content = document.getElementById("content");
       const nav = document.getElementById("navLinks");
+      const cfg = TABS[tab];
+      try {
+        cache[tab] = cache[tab] || await fetchManifest(cfg.manifest, tab);
+      } catch (e) {
+        content.innerHTML = '<div id="loading">لسه مفيش عينات هنا.<br/>No samples yet.</div>';
+        nav.innerHTML = "";
+        return;
+      }
       content.innerHTML = ""; nav.innerHTML = "";
-      const CAUTION = {
-        cloning: '⚠️ <b>تنويه أخلاقي:</b> عينات استنساخ الصوت دي الغرض منها إظهار جودة الموديل وحالات '
-          + 'الاستخدام المفيدة فقط (زي المساعدات الصوتية والمحتوى التعليمي). ممنوع استخدام استنساخ '
-          + 'الصوت لانتحال شخصية أي حد أو خداع أو إيذاء أي شخص.<br/>'
-          + '<span dir="ltr"><b>Ethical note:</b> these voice-cloning samples are for demonstrating quality '
-          + 'and beneficial use cases only — never to impersonate, deceive, or harm anyone.</span>',
-      };
-      manifest.sections.forEach((sec) => {
-        const meta = SECTION_META[sec.id] || { title: sec.id, sub: "" };
-        nav.insertAdjacentHTML("beforeend", `<a href="#${sec.id}">${meta.title.replace(/^[^ ]+ /, "")}</a>`);
-        const cards = sec.items.map(sampleCard).join("");
+      cache[tab].sections.forEach((sec) => {
+        const meta = cfg.meta[sec.id] || { title: sec.id, sub: "" };
+        const id = `${tab}-${sec.id}`;
+        nav.insertAdjacentHTML("beforeend", `<a href="#${id}">${meta.title.replace(/^[^ ]+ /, "")}</a>`);
+        const cards = sec.items.map(cfg.card).join("");
         const caution = CAUTION[sec.id] ? `<div class="caution">${CAUTION[sec.id]}</div>` : "";
         content.insertAdjacentHTML("beforeend",
-          `<section id="${sec.id}"><h2>${meta.title}</h2><p class="sub">${meta.sub}</p>${caution}${cards}</section>`);
+          `<section id="${id}"><h2>${meta.title}</h2><p class="sub">${meta.sub}</p>${caution}${cards}</section>`);
       });
     }
-    load();
+
+    document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+      history.replaceState(null, "", b.dataset.tab === "v2" ? "#v2" : "#");
+      show(b.dataset.tab);
+    }));
+    // open the V2 tab directly with .../#v2 (or any #v2-... section link)
+    show(location.hash.startsWith("#v2") ? "v2" : "base");
   </script>
 </body>
 
